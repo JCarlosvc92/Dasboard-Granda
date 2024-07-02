@@ -76,7 +76,7 @@ def calcular_tabla_cruzada(df, preguntas_seleccionadas, selected_question_key):
 
 def calcular_opciones_respuesta(df, pregunta):
     # Definir las preguntas que deben ser procesadas por esta función
-    preguntas_procesadas = ["P46", "P47", "CGM1CPM", "CGM2ROP", "CGM3CRPM", "CGM4CC", "CGM5CGPM"]  # Reemplaza con las preguntas que deseas procesar
+    preguntas_procesadas = ["P46", "P47", "CGM1CPM", "CGM2ROP", "CGM3CRPM", "CGM4CC", "CGM5CGPM"]
 
     # Verificar si la pregunta especificada debe ser procesada
     if pregunta in preguntas_procesadas:
@@ -87,8 +87,6 @@ def calcular_opciones_respuesta(df, pregunta):
             '8 Regular': 'Regular', '5': 'NsNr/No conoce'
         })
 
-        
-
         # Calcular opciones de respuesta normalizadas
         opciones_respuesta = df['categoria_combinada'].value_counts(normalize=True) * 100
 
@@ -97,13 +95,13 @@ def calcular_opciones_respuesta(df, pregunta):
 
         # Iterar sobre las opciones de respuesta y sumar las categorías combinadas
         for categoria, valor in opciones_respuesta.items():
-            if 'Bueno' in categoria o 'Muy bueno' in categoria:
+            if 'Bueno' in categoria or 'Muy bueno' in categoria:
                 sumas_categorias['Muy bueno/bueno'] += valor
             elif 'Regular' in categoria:
                 sumas_categorias['Regular'] += valor
-            elif 'Pésimo' in categoria o 'Malo' in categoria:
+            elif 'Pésimo' in categoria or 'Malo' in categoria:
                 sumas_categorias['Malo/Pésimo'] += valor
-            elif 'NsNr' in categoria o 'No conoce' in categoria:
+            elif 'NsNr' in categoria or 'No conoce' in categoria:
                 sumas_categorias['NsNr/No conoce'] += valor
 
         # Redondear las sumas de las categorías combinadas
@@ -114,6 +112,7 @@ def calcular_opciones_respuesta(df, pregunta):
         # Si la pregunta no debe ser procesada, devolver las opciones de respuesta normales
         opciones_respuesta = df[pregunta].value_counts(normalize=True) * 100
         return opciones_respuesta.round(1)
+
 
 def plot_question(df, question, graph_type, questions, font_size=18, colors=None):
     opciones_respuesta = calcular_opciones_respuesta(df, question)  # Calcular opciones de respuesta
