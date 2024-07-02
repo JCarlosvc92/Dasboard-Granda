@@ -52,7 +52,8 @@ html_title_template = Template("""
 """)
 
 # Path to the logo
-logo_image_path = r"C:\Users\PAME 1\Desktop\Dasboard-Granda\static\img\logo.png"
+logo_image_path = "static/img/logo.png"
+
 
 def calcular_tabla_cruzada(df, preguntas_seleccionadas, selected_question_key):
     try:
