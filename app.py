@@ -318,7 +318,7 @@ def admin_dashboard():
 
 
 def client_view():
-    static_csv_path = "static/data/data.csv"
+    static_csv_path = "static/data.csv"
 
     df = pd.read_csv(static_csv_path, header=0)
     
