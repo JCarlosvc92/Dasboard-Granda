@@ -299,7 +299,11 @@ def main():
         st.session_state.logged_in = False
 
     # Load data
-    df = pd.read_csv("datos/archivo_limpio.csv")
+    try:
+        df = pd.read_csv("datos/archivo_limpio.csv")
+    except FileNotFoundError:
+        st.error("Error: No se encontró el archivo 'archivo_limpio.csv' en la ruta especificada.")
+        return
 
     # Page navigation
     if st.session_state.logged_in:
