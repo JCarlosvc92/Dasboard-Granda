@@ -10,7 +10,6 @@ import hydralit_components as hc
 import datetime
 import numpy as np
 
-
 # Path to the logo
 logo_image_path = "static/img/logo.png"
 
