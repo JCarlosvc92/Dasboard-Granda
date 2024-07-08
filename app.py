@@ -4,8 +4,9 @@ def main():
     # Configurar la página
     st.set_page_config(page_title='Login Personalizado', layout='wide')
 
-    # Ruta de la imagen de fondo
+    # Rutas de las imágenes
     fondo_path = 'static/img/fondo.png'
+    logo_image_path = 'static/img/logo.png'
 
     # Fondo de la página
     page_bg_img = f'''
@@ -22,8 +23,8 @@ def main():
 
     # Contenedor para centrar el contenido
     st.markdown(
-        '<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;">'
-        '<img src="static/img/logo.png" style="width: 300px;">'
+        f'<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;">'
+        f'<img src="{logo_image_path}" style="width: 200px;">'
         '</div>',
         unsafe_allow_html=True
     )
