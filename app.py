@@ -10,13 +10,22 @@ def main():
     body {
         background-image: url("https://url_de_tu_imagen_de_fondo.jpg");
         background-size: cover;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh; /* Ajusta la altura de la página */
     }
     </style>
     '''
     st.markdown(page_bg_img, unsafe_allow_html=True)
 
-    # Logo de la empresa
-    st.image('static/img/logo.png', width=200)  # Ajusta el tamaño del logo aquí
+    # Contenedor para centrar el logo y el título
+    st.markdown(
+        '<div style="text-align: center;">'
+        '<img src="static/img/logo.png" style="width: 200px;">'
+        '</div>',
+        unsafe_allow_html=True
+    )
 
     # Título
     st.title('Inicio de Sesión')
