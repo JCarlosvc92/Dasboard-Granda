@@ -11,14 +11,16 @@ def main():
         background-image: url("https://url_de_tu_imagen_de_fondo.jpg");
         background-size: cover;
     }
+    .centered {
+        display: flex;
+        justify-content: center;
+    }
     </style>
     '''
     st.markdown(page_bg_img, unsafe_allow_html=True)
 
-    # Centrar el logo
-    col1, col2, col3 = st.beta_columns([1, 2, 1])  # Columnas para centrar el logo
-    with col2:
-        st.image('static/img/logo.png', width=200)  # Ajusta el tamaño del logo aquí
+    # Centrar el logo con CSS personalizado
+    st.markdown('<h1 class="centered"><img src="static/img/logo.png" style="width:200px;"></h1>', unsafe_allow_html=True)
 
     # Título
     st.title('Inicio de Sesión')
