@@ -10,14 +10,20 @@ def main():
     body {
         background-image: url("https://url_de_tu_imagen_de_fondo.jpg");
         background-size: cover;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh; /* Ajusta el alto de la página al 100% del viewport */
     }
     </style>
     '''
     st.markdown(page_bg_img, unsafe_allow_html=True)
 
-    # Centrar el logo de la empresa
-    col1, col2, col3 = st.columns([1, 2, 1])  # Columnas para centrar el logo
-    with col2:
+    # Contenedor para centrar contenido
+    container = st.container()
+
+    # Logo de la empresa centrado
+    with container:
         st.image('static/img/logo.png', width=200)  # Ajusta el tamaño del logo aquí
 
     # Título
