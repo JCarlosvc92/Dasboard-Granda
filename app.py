@@ -62,42 +62,68 @@ def logout():
     if "logged_in" in st.session_state:
         del st.session_state["logged_in"]
 
+# Function for redirection
+def redirect_to_info():
+    st.session_state.page = "info"
+
 # Main function
 def main():
+    if "page" not in st.session_state:
+        st.session_state.page = "login"
+    
     # Load and display the title and logo
     logo_base64 = load_logo(logo_image_path)
     st.markdown(html_title_template.substitute(logo=logo_base64), unsafe_allow_html=True)
     
-    # Check if user is logged in
-    if "logged_in" not in st.session_state:
-        login()
-        return
+    if st.session_state.page == "login":
+        if "logged_in" not in st.session_state:
+            login()
+            if "logged_in" in st.session_state:
+                redirect_to_info()
+        else:
+            redirect_to_info()
     
-    # Display main content if logged in
-    st.title("Contenido Principal")
-    st.write("Aquí va el contenido principal de tu aplicación.")
+    if st.session_state.page == "info":
+        display_info_page()
+        if st.button("Cerrar Sesión"):
+            logout()
+            st.session_state.page = "login"
+
+def display_info_page():
+    st.title("Municipio de Deria")
+    st.write("""
+    **Municipio de Granada**
+    Fundada en 21 de abril de 1524, es conocida como “La gran sultana”, constituyéndose en uno de los asentamientos coloniales más antiguos de Centroamérica. Se distingue por la fusión de elementos arquitectónicos en la construcción de la ciudad.
+    """)
     
-    # Example of how to integrate other parts of your application
-    # For example, displaying a DataFrame
-    df = pd.DataFrame({
-        "A": [1, 2, 3],
-        "B": [4, 5, 6]
-    })
-    st.write(df)
+    # Dividir en dos columnas
+    col1, col2 = st.columns(2)
+    
+    # Menú desplegable para seleccionar el título
+    selected_info = col1.radio("Seleccionar información:", ["Extensión territorial", "Limita", "Población estimada",
+                                                         "Población urbana", "Población Rural", "Densidad poblacional",
+                                                         "Organización Territorial", "Religión más practicada",
+                                                         "Principal actividad económica", "Elecciones Municipales"])
+    
+    # Mostrar la información correspondiente en la segunda columna
+    if selected_info == "Extensión territorial":
+        col2.write("""
+        529.1km², representa el 56.95% del departamento.
+        """)
+        # Agregar imagen en la segunda columna
 
-    # Example of plotting with Plotly Express
-    fig = px.bar(df, x="A", y="B", title="Gráfico de Barras")
-    st.plotly_chart(fig)
-
-    # Example of downloading a CSV
-    csv = df.to_csv(index=False)
-    b64 = base64.b64encode(csv.encode()).decode()
-    href = f'<a href="data:file/csv;base64,{b64}" download="datos.csv">Descargar CSV</a>'
-    st.markdown(href, unsafe_allow_html=True)
-
-    # Example of logging out
-    if st.button("Cerrar Sesión"):
-        logout()
+    elif selected_info == "Limita":
+        col2.write("""
+        Al Norte con Tipitapa. 
+        Al Sur con Nandaime. 
+        Al Este con San Lorenzo y el lago Cocibolca. 
+        Al Oeste con Tisma, Masaya, Diría, Diriomo, Nandaime y laguna de apoyo.
+        """)
+    elif selected_info == "Población estimada":
+        col2.write("""
+        132,054 que representa el 61.62%
+        """)
+    # Continuar con el resto de los casos...
 
 if __name__ == "__main__":
     main()
