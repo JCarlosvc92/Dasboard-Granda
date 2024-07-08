@@ -1,22 +1,14 @@
 import streamlit as st
 import pandas as pd
-import base64
-from string import Template
+from PIL import Image
 import plotly.express as px
+import base64
+import time
+from streamlit_option_menu import option_menu
+from string import Template
 
 # Path to the logo
 logo_image_path = "static/img/logo.png"
-
-def login():
-    st.sidebar.title("Inicio de Sesión")
-    username = st.sidebar.text_input("Usuario")
-    password = st.sidebar.text_input("Contraseña", type="password")
-    
-    if st.sidebar.button("Iniciar Sesión"):
-        if username == "admin" and password == "admin":
-            st.session_state["logged_in"] = True
-        else:
-            st.sidebar.error("Usuario o contraseña incorrectos")
 
 # Function to load logo and convert to base64
 def load_logo(logo_path):
@@ -56,36 +48,64 @@ html_title_template = Template("""
     </div>
 """)
 
-def plot_question(df, question, graph_type, questions, font_size=18, colors=None):
-    # Function to plot the question
-    pass  # Implement your plot function here
+# Function for login
+def login():
+    st.sidebar.title("Inicio de Sesión")
+    username = st.sidebar.text_input("Usuario")
+    password = st.sidebar.text_input("Contraseña", type="password")
+    
+    if st.sidebar.button("Iniciar Sesión"):
+        if username == "admin" and password == "admin":
+            st.session_state["logged_in"] = True
+        else:
+            st.sidebar.error("Usuario o contraseña incorrectos")
 
+# Function for logout
+def logout():
+    if "logged_in" in st.session_state:
+        del st.session_state["logged_in"]
+
+# Main function
 def main():
     # Load and display the title and logo
     logo_base64 = load_logo(logo_image_path)
     st.markdown(html_title_template.substitute(logo=logo_base64), unsafe_allow_html=True)
     
+    # Check if user is logged in
     if "logged_in" not in st.session_state:
         login()
         return
     
-    st.title("Bienvenido al Municipio de Granada")
-    st.write("""
-        Fundada el 21 de abril de 1524, Granada es conocida como “La gran sultana”,
-        constituyéndose en uno de los asentamientos coloniales más antiguos de Centroamérica.
-        Se distingue por la fusión de elementos arquitectónicos en la construcción de la ciudad.
-    """)
-    
-    # Example of data visualization based on user role
-    if st.session_state.get("admin"):
-        st.header("Dashboard de Administrador")
-        st.write("Aquí se muestra el dashboard y funcionalidades administrativas.")
-        # Implementar funcionalidades administrativas
+    # Navigation Menu
+    selected = option_menu(
+        menu_title=None,
+        options=["Inicio", "Caracterización", "Administrador", "Cerrar Sesion"],
+        icons=["house", "person", "gear"],
+        menu_icon="cast",
+        default_index=0,
+        orientation="horizontal",
+    )
+
+    if selected == "Inicio":
+        st.session_state.admin = False
+        client_view()
+
+    elif selected == "Caracterización":
+        st.session_state.admin = False
+        caracterizacion()
+
+    elif selected == "Administrador":
+        st.session_state.admin = True
+        admin_dashboard()
+
+    elif selected == "Cerrar Sesion":
+        logout()
 
     else:
-        st.header("Vista de Cliente")
-        st.write("Aquí se muestra la vista para los usuarios regulares.")
-        # Implementar funcionalidades para usuarios regulares
+        st.session_state.admin = False
+        client_view()
+
+# The rest of your functions (caracterizacion, admin_dashboard, client_view, etc.) remain unchanged
 
 if __name__ == "__main__":
     main()
