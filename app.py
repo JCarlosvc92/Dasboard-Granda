@@ -4,15 +4,18 @@ def main():
     # Configurar la página
     st.set_page_config(page_title='Login Personalizado', layout='wide')
 
+    # Ruta de la imagen de fondo
+    fondo_path = 'static/img/fondo.png'
+
     # Fondo de la página
-    page_bg_img = '''
+    page_bg_img = f'''
     <style>
-    body {
-        background-image: url("https://www.google.com/url?sa=i&url=https%3A%2F%2Fes.pngtree.com%2Ffreebackground%2Fdark-blue-background-abstract-with-modern-banner_1739950.html&psig=AOvVaw24lMw90jAKwFeDDvLX-ue3&ust=1720540782402000&source=images&cd=vfe&opi=89978449&ved=0CBEQjRxqFwoTCNDv54Tol4cDFQAAAAAdAAAAABAE");
+    body {{
+        background-image: url("{fondo_path}");
         background-size: cover;
         background-position: center;
         height: 100vh; /* Ajusta la altura de la página */
-    }
+    }}
     </style>
     '''
     st.markdown(page_bg_img, unsafe_allow_html=True)
