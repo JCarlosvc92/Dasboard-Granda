@@ -236,6 +236,22 @@ def plot_question(df, question, graph_type, questions, font_size=18, colors=None
         fig.update_layout(font=dict(size=font_size))  # Ajustar el tamaño de fuente global
         st.plotly_chart(fig)
 
+# Main function
+def main():
+    if "logged_in" not in st.session_state:
+        st.session_state["logged_in"] = False
+
+    if not st.session_state["logged_in"]:
+        login()
+    else:
+        logo_base64 = load_logo(logo_image_path)
+        st.markdown(html_title_template.substitute(logo=logo_base64), unsafe_allow_html=True)
+        st.sidebar.title("Menú de Opciones")
+        selected = option_menu("Menú", ["Página Principal", "Gráfico de barras", "Tabla cruzada"],
+                               icons=["house", "bar-chart", "table"],
+                               menu_icon="cast", default_index=0)
+
+
 def main():
     # Load and display the title and logo
     logo_base64 = load_logo(logo_image_path)
