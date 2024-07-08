@@ -24,7 +24,6 @@ def login():
         else:
             st.sidebar.error("Usuario o contraseña incorrectos")
 
-
 # Function to load logo and convert to base64
 def load_logo(logo_path):
     with open(logo_path, "rb") as image_file:
