@@ -23,7 +23,7 @@ def main():
     # Contenedor para centrar el contenido
     st.markdown(
         '<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;">'
-        '<img src="static/img/logo.png" style="width: 200px;">'
+        '<img src="static/img/logo.png" style="width: 300px;">'
         '</div>',
         unsafe_allow_html=True
     )
