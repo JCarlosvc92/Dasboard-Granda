@@ -15,8 +15,10 @@ def main():
     '''
     st.markdown(page_bg_img, unsafe_allow_html=True)
 
-    # Logo de la empresa
-    st.image('static/img/logo.png', width=200)  # Ajusta el tamaño del logo aquí
+    # Centrar el logo de la empresa
+    col1, col2, col3 = st.columns([1, 2, 1])  # Columnas para centrar el logo
+    with col2:
+        st.image('static/img/logo.png', width=200)  # Ajusta el tamaño del logo aquí
 
     # Título
     st.title('Inicio de Sesión')
