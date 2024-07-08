@@ -5,8 +5,6 @@ import plotly.express as px
 import base64
 from streamlit_option_menu import option_menu
 from string import Template
-import datetime
-import numpy as np
 
 # Path to the logo
 logo_image_path = "static/img/logo.png"
@@ -17,11 +15,11 @@ def login():
     password = st.text_input("Contraseña", type="password")
     
     if st.button("Iniciar Sesión"):
-        if username == "admin" and password == "lcm2024":
+        if username == "admin" and password == "admin":
             st.session_state["logged_in"] = True
         else:
             st.error("Usuario o contraseña incorrectos")
-            
+
 # Function to load logo and convert to base64
 def load_logo(logo_path):
     with open(logo_path, "rb") as image_file:
@@ -58,12 +56,9 @@ html_title_template = Template("""
         <img src="data:image/png;base64,$logo" class="logo">
         <h1 class="title-test">Bienvenido al Municipio de Granada </h1>
     </div>
-    
 """)
 
-# Path to the logo
-logo_image_path = "static/img/logo.png"
-
+# Function to calculate cross-tabulation table
 def calcular_tabla_cruzada(df, preguntas_seleccionadas, selected_question_key):
     try:
         preguntas = [pregunta.split(":")[0].strip() for pregunta in preguntas_seleccionadas]
