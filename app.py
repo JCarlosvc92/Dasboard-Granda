@@ -3,7 +3,6 @@ import pandas as pd
 from PIL import Image
 import plotly.express as px
 import base64
-import time
 from streamlit_option_menu import option_menu
 from string import Template
 
@@ -57,13 +56,10 @@ def login():
     if st.sidebar.button("Iniciar Sesión"):
         if username == "admin" and password == "admin":
             st.session_state["logged_in"] = True
+            return True
         else:
             st.sidebar.error("Usuario o contraseña incorrectos")
-
-# Function for logout
-def logout():
-    if "logged_in" in st.session_state:
-        del st.session_state["logged_in"]
+    return False
 
 # Main function
 def main():
@@ -71,11 +67,13 @@ def main():
     logo_base64 = load_logo(logo_image_path)
     st.markdown(html_title_template.substitute(logo=logo_base64), unsafe_allow_html=True)
     
-    # Check if user is logged in
-    if "logged_in" not in st.session_state:
-        login()
+    if not login():
         return
     
+    # Redirection after successful login
+    if "logged_in" in st.session_state and st.session_state["logged_in"]:
+        st.experimental_set_query_params(page="client_view")
+
     # Navigation Menu
     selected = option_menu(
         menu_title=None,
@@ -86,7 +84,7 @@ def main():
         orientation="horizontal",
     )
 
-    if selected == "Inicio":
+    if selected == "Inicio" or st.experimental_get_query_params().get("page", [""])[0] == "client_view":
         st.session_state.admin = False
         client_view()
 
@@ -99,7 +97,8 @@ def main():
         admin_dashboard()
 
     elif selected == "Cerrar Sesion":
-        logout()
+        if "logged_in" in st.session_state:
+            del st.session_state["logged_in"]
 
     else:
         st.session_state.admin = False
