@@ -8,7 +8,7 @@ def main():
     page_bg_img = '''
     <style>
     body {
-        background-image: url("https://url_de_tu_imagen_de_fondo.jpg");
+        background-image: url("https://www.google.com/url?sa=i&url=https%3A%2F%2Fes.pngtree.com%2Ffreebackground%2Fdark-blue-background-abstract-with-modern-banner_1739950.html&psig=AOvVaw24lMw90jAKwFeDDvLX-ue3&ust=1720540782402000&source=images&cd=vfe&opi=89978449&ved=0CBEQjRxqFwoTCNDv54Tol4cDFQAAAAAdAAAAABAE");
         background-size: cover;
         background-position: center;
         height: 100vh; /* Ajusta la altura de la página */
