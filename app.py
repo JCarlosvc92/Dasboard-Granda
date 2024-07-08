@@ -12,16 +12,16 @@ import numpy as np
 logo_image_path = "static/img/logo.png"
 
 def login():
-    st.sidebar.title("Inicio de Sesión")
-    username = st.sidebar.text_input("Usuario")
-    password = st.sidebar.text_input("Contraseña", type="password")
+    st.title("Inicio de Sesión")
+    username = st.text_input("Usuario")
+    password = st.text_input("Contraseña", type="password")
     
-    if st.sidebar.button("Iniciar Sesión"):
+    if st.button("Iniciar Sesión"):
         if username == "admin" and password == "admin":
             st.session_state["logged_in"] = True
         else:
-            st.sidebar.error("Usuario o contraseña incorrectos")
-
+            st.error("Usuario o contraseña incorrectos")
+            
 # Function to load logo and convert to base64
 def load_logo(logo_path):
     with open(logo_path, "rb") as image_file:
