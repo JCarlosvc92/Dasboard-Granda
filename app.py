@@ -54,8 +54,13 @@ def login():
     password = st.text_input("Contraseña", type="password")
     
     if st.button("Iniciar Sesión"):
-        if username == "Usuario1" and password == "lcm2024":
+        if username == "admin" and password == "admin":
             st.session_state["logged_in"] = True
+            st.session_state["role"] = "admin"
+            st.experimental_rerun()
+        elif username == "usuario" and password == "usuario":
+            st.session_state["logged_in"] = True
+            st.session_state["role"] = "usuario"
             st.experimental_rerun()
         else:
             st.error("Usuario o contraseña incorrectos")
@@ -63,6 +68,7 @@ def login():
 def logout():
     if "logged_in" in st.session_state:
         del st.session_state["logged_in"]
+        del st.session_state["role"]
 
 def calcular_tabla_cruzada(df, preguntas_seleccionadas, selected_question_key):
     try:
@@ -175,8 +181,15 @@ def plot_question(df, question, graph_type, questions, font_size=18, colors=None
                 custom_colors.append("#FFC000")  # Aceptación en amarillo
             elif label == "Rechazo":
                 custom_colors.append("#C00000")  # Rechazo en rojo
+            elif label == "No opina/No conoce":
+                custom_colors.append("#808080")  # No opina/no conoce en gris
         if show_no_opina:
             custom_colors.append("#808080")  # Agregar un color para 'No opina/no conoce'
+        fig = px.bar(x=labels, y=values,
+                     labels={'x': 'Respuesta', 'y': 'Porcentaje'},
+                     color=labels,
+                     color_discrete_map={val: col for val, col in zip(labels, custom_colors)})
+    elif colors:
         if graph_type == "Gráfico de barras":
             fig = px.bar(x=labels, y=values,
                          labels={'x': 'Respuesta', 'y': 'Porcentaje'},
@@ -222,25 +235,29 @@ def main():
             st.experimental_rerun()
 
         st.title("Encuesta de Licencia Ciudadana Municipal")
+        
+        # Diferenciación de funcionalidad según el rol
+        if st.session_state["role"] == "admin":
+            st.subheader("Subir datos (Administrador)")
+            uploaded_file = st.file_uploader("Sube tu archivo CSV", type=["csv"])
+            if uploaded_file is not None:
+                df = pd.read_csv(uploaded_file)
 
-        # File upload
-        st.subheader("Subir datos")
-        uploaded_file = st.file_uploader("Sube tu archivo CSV", type=["csv"])
-        if uploaded_file is not None:
-            df = pd.read_csv(uploaded_file)
+                st.subheader("Seleccionar opciones")
+                graph_type = st.selectbox("Selecciona el tipo de gráfico", ["Gráfico de barras", "Gráfico de pastel"])
+                questions = df.columns.tolist()
+                selected_question = st.selectbox("Selecciona la pregunta que deseas visualizar", questions)
 
-            st.subheader("Seleccionar opciones")
-            graph_type = st.selectbox("Selecciona el tipo de gráfico", ["Gráfico de barras", "Gráfico de pastel"])
-            questions = df.columns.tolist()
-            selected_question = st.selectbox("Selecciona la pregunta que deseas visualizar", questions)
+                # Color selection
+                custom_colors = st.color_picker("Seleccione color para las respuestas", value='#00B050', key="color_picker")
+                colors = [custom_colors]
 
-            # Color selection
-            custom_colors = st.color_picker("Seleccione color para las respuestas", value='#00B050', key="color_picker")
-            colors = [custom_colors]
-
-            if st.button("Generar gráfico"):
-                fig = plot_question(df, selected_question, graph_type, questions, colors=colors)
-                st.plotly_chart(fig)
+                if st.button("Generar gráfico"):
+                    fig = plot_question(df, selected_question, graph_type, questions, colors=colors)
+                    st.plotly_chart(fig)
+        else:
+            st.subheader("Visualización de datos (Usuario)")
+            # Aquí puedes agregar funcionalidades específicas para los usuarios que no sean administradores
 
 if __name__ == "__main__":
     main()
