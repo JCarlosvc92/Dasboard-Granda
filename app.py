@@ -1,12 +1,22 @@
 import streamlit as st
 import pandas as pd
-from PIL import Image
-import plotly.express as px
 import base64
 from string import Template
+import plotly.express as px
 
 # Path to the logo
 logo_image_path = "static/img/logo.png"
+
+def login():
+    st.sidebar.title("Inicio de Sesión")
+    username = st.sidebar.text_input("Usuario")
+    password = st.sidebar.text_input("Contraseña", type="password")
+    
+    if st.sidebar.button("Iniciar Sesión"):
+        if username == "admin" and password == "admin":
+            st.session_state["logged_in"] = True
+        else:
+            st.sidebar.error("Usuario o contraseña incorrectos")
 
 # Function to load logo and convert to base64
 def load_logo(logo_path):
@@ -42,62 +52,40 @@ html_title_template = Template("""
     </style>
     <div class="header">
         <img src="data:image/png;base64,$logo" class="logo">
-        <h1 class="title-test">Bienvenido al LCM</h1>
+        <h1 class="title-test">Bienvenido al Municipio de Granada</h1>
     </div>
 """)
 
-# Function for login
-def login():
-    username = st.text_input("Usuario")
-    password = st.text_input("Contraseña", type="password")
-    
-    if st.button("Iniciar Sesión"):
-        if username == "Usuario1" and password == "lcm2024":
-            st.session_state["logged_in"] = True
-        else:
-            st.error("Usuario o contraseña incorrectos")
+def plot_question(df, question, graph_type, questions, font_size=18, colors=None):
+    # Function to plot the question
+    pass  # Implement your plot function here
 
-# Function for logout
-def logout():
-    if "logged_in" in st.session_state:
-        del st.session_state["logged_in"]
-
-# Main function
 def main():
     # Load and display the title and logo
     logo_base64 = load_logo(logo_image_path)
     st.markdown(html_title_template.substitute(logo=logo_base64), unsafe_allow_html=True)
     
-    # Check if user is logged in
     if "logged_in" not in st.session_state:
         login()
         return
     
-    # Display main content if logged in
-    st.title("Contenido Principal")
-    st.write("Aquí va el contenido principal de tu aplicación.")
+    st.title("Bienvenido al Municipio de Granada")
+    st.write("""
+        Fundada el 21 de abril de 1524, Granada es conocida como “La gran sultana”,
+        constituyéndose en uno de los asentamientos coloniales más antiguos de Centroamérica.
+        Se distingue por la fusión de elementos arquitectónicos en la construcción de la ciudad.
+    """)
     
-    # Example of how to integrate other parts of your application
-    # For example, displaying a DataFrame
-    df = pd.DataFrame({
-        "A": [1, 2, 3],
-        "B": [4, 5, 6]
-    })
-    st.write(df)
+    # Example of data visualization based on user role
+    if st.session_state.get("admin"):
+        st.header("Dashboard de Administrador")
+        st.write("Aquí se muestra el dashboard y funcionalidades administrativas.")
+        # Implementar funcionalidades administrativas
 
-    # Example of plotting with Plotly Express
-    fig = px.bar(df, x="A", y="B", title="Gráfico de Barras")
-    st.plotly_chart(fig)
-
-    # Example of downloading a CSV
-    csv = df.to_csv(index=False)
-    b64 = base64.b64encode(csv.encode()).decode()
-    href = f'<a href="data:file/csv;base64,{b64}" download="datos.csv">Descargar CSV</a>'
-    st.markdown(href, unsafe_allow_html=True)
-
-    # Example of logging out
-    if st.button("Cerrar Sesión"):
-        logout()
+    else:
+        st.header("Vista de Cliente")
+        st.write("Aquí se muestra la vista para los usuarios regulares.")
+        # Implementar funcionalidades para usuarios regulares
 
 if __name__ == "__main__":
     main()
