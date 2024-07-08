@@ -3,7 +3,6 @@ import pandas as pd
 from PIL import Image
 import plotly.express as px
 import base64
-from streamlit_option_menu import option_menu
 from string import Template
 
 # Path to the logo
@@ -49,17 +48,19 @@ html_title_template = Template("""
 
 # Function for login
 def login():
-    st.sidebar.title("Inicio de Sesión")
-    username = st.sidebar.text_input("Usuario")
-    password = st.sidebar.text_input("Contraseña", type="password")
+    username = st.text_input("Usuario")
+    password = st.text_input("Contraseña", type="password")
     
-    if st.sidebar.button("Iniciar Sesión"):
+    if st.button("Iniciar Sesión"):
         if username == "admin" and password == "admin":
             st.session_state["logged_in"] = True
-            return True
         else:
-            st.sidebar.error("Usuario o contraseña incorrectos")
-    return False
+            st.error("Usuario o contraseña incorrectos")
+
+# Function for logout
+def logout():
+    if "logged_in" in st.session_state:
+        del st.session_state["logged_in"]
 
 # Main function
 def main():
@@ -67,44 +68,36 @@ def main():
     logo_base64 = load_logo(logo_image_path)
     st.markdown(html_title_template.substitute(logo=logo_base64), unsafe_allow_html=True)
     
-    if not login():
+    # Check if user is logged in
+    if "logged_in" not in st.session_state:
+        login()
         return
     
-    # Redirection after successful login
-    if "logged_in" in st.session_state and st.session_state["logged_in"]:
-        st.experimental_set_query_params(page="client_view")
+    # Display main content if logged in
+    st.title("Contenido Principal")
+    st.write("Aquí va el contenido principal de tu aplicación.")
+    
+    # Example of how to integrate other parts of your application
+    # For example, displaying a DataFrame
+    df = pd.DataFrame({
+        "A": [1, 2, 3],
+        "B": [4, 5, 6]
+    })
+    st.write(df)
 
-    # Navigation Menu
-    selected = option_menu(
-        menu_title=None,
-        options=["Inicio", "Caracterización", "Administrador", "Cerrar Sesion"],
-        icons=["house", "person", "gear"],
-        menu_icon="cast",
-        default_index=0,
-        orientation="horizontal",
-    )
+    # Example of plotting with Plotly Express
+    fig = px.bar(df, x="A", y="B", title="Gráfico de Barras")
+    st.plotly_chart(fig)
 
-    if selected == "Inicio" or st.experimental_get_query_params().get("page", [""])[0] == "client_view":
-        st.session_state.admin = False
-        client_view()
+    # Example of downloading a CSV
+    csv = df.to_csv(index=False)
+    b64 = base64.b64encode(csv.encode()).decode()
+    href = f'<a href="data:file/csv;base64,{b64}" download="datos.csv">Descargar CSV</a>'
+    st.markdown(href, unsafe_allow_html=True)
 
-    elif selected == "Caracterización":
-        st.session_state.admin = False
-        caracterizacion()
-
-    elif selected == "Administrador":
-        st.session_state.admin = True
-        admin_dashboard()
-
-    elif selected == "Cerrar Sesion":
-        if "logged_in" in st.session_state:
-            del st.session_state["logged_in"]
-
-    else:
-        st.session_state.admin = False
-        client_view()
-
-# The rest of your functions (caracterizacion, admin_dashboard, client_view, etc.) remain unchanged
+    # Example of logging out
+    if st.button("Cerrar Sesión"):
+        logout()
 
 if __name__ == "__main__":
     main()
