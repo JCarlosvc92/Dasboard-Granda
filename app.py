@@ -7,6 +7,8 @@ def main():
     # Rutas de las imágenes
     fondo_path = 'static/img/fondo.png'
     logo_image_path = 'static/img/logo.png'
+    
+    st.image(logo_image_path, width=300)
 
     # Fondo de la página
     page_bg_img = f'''
