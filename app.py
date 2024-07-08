@@ -14,16 +14,16 @@ import numpy as np
 logo_image_path = "static/img/logo.png"
 
 def login():
-    st.title("Inicio de Sesión")
-    username = st.text_input("Usuario")
-    password = st.text_input("Contraseña", type="password")
+    st.sidebar.title("Inicio de Sesión")
+    username = st.sidebar.text_input("Usuario")
+    password = st.sidebar.text_input("Contraseña", type="password")
     
-    if st.button("Iniciar Sesión"):
+    if st.sidebar.button("Iniciar Sesión"):
         if username == "admin" and password == "admin":
             st.session_state["logged_in"] = True
-            st.experimental_rerun()
         else:
-            st.error("Usuario o contraseña incorrectos")
+            st.sidebar.error("Usuario o contraseña incorrectos")
+
 
 # Function to load logo and convert to base64
 def load_logo(logo_path):
@@ -59,8 +59,9 @@ html_title_template = Template("""
     </style>
     <div class="header">
         <img src="data:image/png;base64,$logo" class="logo">
-        <h1 class="title-test">Bienvenido al Municipio de Granada</h1>
+        <h1 class="title-test">Bienvenido al Municipio de Granada </h1>
     </div>
+    
 """)
 
 # Path to the logo
