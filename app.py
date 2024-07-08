@@ -3,8 +3,6 @@ import pandas as pd
 from PIL import Image
 import plotly.express as px
 import base64
-import time
-from streamlit_option_menu import option_menu
 from string import Template
 
 # Path to the logo
@@ -50,15 +48,14 @@ html_title_template = Template("""
 
 # Function for login
 def login():
-    st.sidebar.title("Inicio de Sesión")
-    username = st.sidebar.text_input("Usuario")
-    password = st.sidebar.text_input("Contraseña", type="password")
+    username = st.text_input("Usuario")
+    password = st.text_input("Contraseña", type="password")
     
-    if st.sidebar.button("Iniciar Sesión"):
+    if st.button("Iniciar Sesión"):
         if username == "admin" and password == "admin":
             st.session_state["logged_in"] = True
         else:
-            st.sidebar.error("Usuario o contraseña incorrectos")
+            st.error("Usuario o contraseña incorrectos")
 
 # Function for logout
 def logout():
@@ -76,36 +73,31 @@ def main():
         login()
         return
     
-    # Navigation Menu
-    selected = option_menu(
-        menu_title=None,
-        options=["Inicio", "Caracterización", "Administrador", "Cerrar Sesion"],
-        icons=["house", "person", "gear"],
-        menu_icon="cast",
-        default_index=0,
-        orientation="horizontal",
-    )
+    # Display main content if logged in
+    st.title("Contenido Principal")
+    st.write("Aquí va el contenido principal de tu aplicación.")
+    
+    # Example of how to integrate other parts of your application
+    # For example, displaying a DataFrame
+    df = pd.DataFrame({
+        "A": [1, 2, 3],
+        "B": [4, 5, 6]
+    })
+    st.write(df)
 
-    if selected == "Inicio":
-        st.session_state.admin = False
-        client_view()
+    # Example of plotting with Plotly Express
+    fig = px.bar(df, x="A", y="B", title="Gráfico de Barras")
+    st.plotly_chart(fig)
 
-    elif selected == "Caracterización":
-        st.session_state.admin = False
-        caracterizacion()
+    # Example of downloading a CSV
+    csv = df.to_csv(index=False)
+    b64 = base64.b64encode(csv.encode()).decode()
+    href = f'<a href="data:file/csv;base64,{b64}" download="datos.csv">Descargar CSV</a>'
+    st.markdown(href, unsafe_allow_html=True)
 
-    elif selected == "Administrador":
-        st.session_state.admin = True
-        admin_dashboard()
-
-    elif selected == "Cerrar Sesion":
+    # Example of logging out
+    if st.button("Cerrar Sesión"):
         logout()
-
-    else:
-        st.session_state.admin = False
-        client_view()
-
-# The rest of your functions (caracterizacion, admin_dashboard, client_view, etc.) remain unchanged
 
 if __name__ == "__main__":
     main()
