@@ -21,12 +21,12 @@ def main():
     '''
     st.markdown(page_bg_img, unsafe_allow_html=True)
 
-    st.markdown(
-     f'<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 80%;">'
-     f'<img src="{logo_image_path}" style="width: 200px;">'  # Ajusta el tamaño del logo aquí
-     '</div>',
-     unsafe_allow_html=True
-  )
+   st.markdown(
+    f'<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;">'
+    f'<img src="{logo_image_path}" style="width: 300px;">'
+    '</div>',
+    unsafe_allow_html=True
+)
 
 
     # Título
