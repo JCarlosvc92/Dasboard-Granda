@@ -10,18 +10,16 @@ def main():
     body {
         background-image: url("https://url_de_tu_imagen_de_fondo.jpg");
         background-size: cover;
-        display: flex;
-        justify-content: center;
-        align-items: center;
+        background-position: center;
         height: 100vh; /* Ajusta la altura de la página */
     }
     </style>
     '''
     st.markdown(page_bg_img, unsafe_allow_html=True)
 
-    # Contenedor para centrar el logo y el título
+    # Contenedor para centrar el contenido
     st.markdown(
-        '<div style="text-align: center;">'
+        '<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;">'
         '<img src="static/img/logo.png" style="width: 200px;">'
         '</div>',
         unsafe_allow_html=True
