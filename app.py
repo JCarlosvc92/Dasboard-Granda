@@ -3,27 +3,12 @@ import pandas as pd
 from PIL import Image
 import plotly.express as px
 import base64
-import time
-from streamlit_option_menu import option_menu
 from string import Template
-import hydralit_components as hc
 import datetime
 import numpy as np
 
 # Path to the logo
 logo_image_path = "static/img/logo.png"
-
-def login():
-    st.sidebar.title("Inicio de Sesión")
-    username = st.sidebar.text_input("Usuario")
-    password = st.sidebar.text_input("Contraseña", type="password")
-    
-    if st.sidebar.button("Iniciar Sesión"):
-        if username == "admin" and password == "admin":
-            st.session_state["logged_in"] = True
-        else:
-            st.sidebar.error("Usuario o contraseña incorrectos")
-
 
 # Function to load logo and convert to base64
 def load_logo(logo_path):
@@ -59,14 +44,25 @@ html_title_template = Template("""
     </style>
     <div class="header">
         <img src="data:image/png;base64,$logo" class="logo">
-        <h1 class="title-test">Bienvenido al Municipio de Granada </h1>
+        <h1 class="title-test">Bienvenido al LCM</h1>
     </div>
-    
 """)
 
-# Path to the logo
-logo_image_path = "static/img/logo.png"
+def login():
+    st.title("Inicio de Sesión")
+    username = st.text_input("Usuario")
+    password = st.text_input("Contraseña", type="password")
+    
+    if st.button("Iniciar Sesión"):
+        if username == "admin" and password == "admin":
+            st.session_state["logged_in"] = True
+            st.experimental_rerun()
+        else:
+            st.error("Usuario o contraseña incorrectos")
 
+def logout():
+    if "logged_in" in st.session_state:
+        del st.session_state["logged_in"]
 
 def calcular_tabla_cruzada(df, preguntas_seleccionadas, selected_question_key):
     try:
@@ -96,8 +92,6 @@ def calcular_opciones_respuesta(df, pregunta):
             '6 Pésimo': 'Pésimo/Malo', '7 Malo': 'Pésimo/Malo',
             '8 Regular': 'Regular', '5': 'NsNr/No conoce'
         })
-
-        
 
         # Calcular opciones de respuesta normalizadas
         opciones_respuesta = df['categoria_combinada'].value_counts(normalize=True) * 100
@@ -146,18 +140,16 @@ def plot_question(df, question, graph_type, questions, font_size=18, colors=None
 
     # Verificar si 'No opina/no conoce' está en las etiquetas y si hay datos para esta categoría
     if "No opina/No conoce" in labels and len(df[df[question] == "No opina/No conoce"]) > 0:
-     show_no_opina = True
-     no_opina_index = labels.index("No opina/No conoce")
+        show_no_opina = True
+        no_opina_index = labels.index("No opina/No conoce")
     else:
-     show_no_opina = False
+        show_no_opina = False
 
     # Filtrar los valores de 'No opina/no conoce'
     if "No opina/No conoce" in labels and not show_no_opina:
         idx = labels.index("No opina/No conoce")
         del labels[idx]
         del values[idx]
-
-
 
     if question == "P09":
         if colors:
@@ -190,207 +182,65 @@ def plot_question(df, question, graph_type, questions, font_size=18, colors=None
                          labels={'x': 'Respuesta', 'y': 'Porcentaje'},
                          color=labels,
                          color_discrete_map={val: col for val, col in zip(labels, custom_colors)})
-        elif graph_type == "Gráfico de barras horizontales":
-            fig = px.bar(x=values, y=labels, orientation='h',
-                         labels={'y': 'Respuesta', 'x': 'Porcentaje'},
-                         color=labels,
-                         color_discrete_map={val: col for val, col in zip(labels, custom_colors)})
-        elif graph_type == "Gráfico de pastel":
-            fig = px.pie(names=labels,
-                         values=values,
-                         title=f"Frecuencia de respuestas para {questions[question]}",
+        else:
+            fig = px.pie(values=values, names=labels,
+                         labels={'names': 'Respuesta', 'values': 'Porcentaje'},
                          color=labels,
                          color_discrete_map={val: col for val, col in zip(labels, custom_colors)})
     else:
         if graph_type == "Gráfico de barras":
-            if colors:
-                fig = px.bar(x=labels, y=values,
-                             labels={'x': 'Respuesta', 'y': 'Porcentaje'},
-                             color=labels,
-                             color_discrete_map={val: col for val, col in zip(labels, colors)})
-            else:
-                fig = px.bar(x=labels, y=values,
-                             labels={'x': 'Respuesta', 'y': 'Porcentaje'})
-        elif graph_type == "Gráfico de barras horizontales":
-            if colors:
-                fig = px.bar(x=values, y=labels, orientation='h',
-                             labels={'y': 'Respuesta', 'x': 'Porcentaje'},
-                             color=labels,
-                             color_discrete_map={val: col for val, col in zip(labels, colors)})
-            else:
-                fig = px.bar(x=values, y=labels, orientation='h',
-                             labels={'y': 'Respuesta', 'x': 'Porcentaje'})
-        elif graph_type == "Gráfico de pastel":
-            if colors:
-                fig = px.pie(names=labels,
-                             values=values,
-                             title=f"Frecuencia de respuestas para {questions[question]}",
-                             color=labels,
-                             color_discrete_map={val: col for val, col in zip(labels, colors)})
-            else:
-                fig = px.pie(names=labels,
-                             values=values,
-                             title=f"Frecuencia de respuestas para {questions[question]}")
+            fig = px.bar(x=labels, y=values,
+                         labels={'x': 'Respuesta', 'y': 'Porcentaje'},
+                         color=labels,
+                         color_discrete_sequence=colors)
+        else:
+            fig = px.pie(values=values, names=labels,
+                         labels={'names': 'Respuesta', 'values': 'Porcentaje'},
+                         color=labels,
+                         color_discrete_sequence=colors)
 
-    if fig:
-        fig.update_traces(texttemplate='%{value:.1f}%', textfont_size=font_size)
-        fig.update_layout(font=dict(size=font_size))  # Ajustar el tamaño de fuente global
-        st.plotly_chart(fig)
-
-def main():
-    # Load and display the title and logo
-    logo_base64 = load_logo(logo_image_path)
-    st.markdown(html_title_template.substitute(logo=logo_base64), unsafe_allow_html=True)
-    
-    # Navigation Menu
-    selected = option_menu(
-        menu_title=None,
-        options=["Inicio", "Caracterización", "Administrador", "Cerrar Sesion"],
-        icons=["house", "person", "gear"],
-        menu_icon="cast",
-        default_index=0,
-        orientation="horizontal",
+    # Agregar media de la pregunta como anotación en el gráfico
+    fig.add_annotation(
+        text=f"Media: {mean_response:.2f}%",
+        x=0.5, y=1.1,
+        xref="paper", yref="paper",
+        showarrow=False,
+        font=dict(size=font_size, color="black")
     )
+    
+    return fig
 
-    if selected == "Inicio":
-        st.session_state.admin = False
-        client_view()
+# App starts here
+def main():
+    st.write(html_title_template.substitute(logo=load_logo(logo_image_path)), unsafe_allow_html=True)
 
-    elif selected == "Caracterización":
-        st.session_state.admin = False
-        caracterizacion()
-
-    elif selected == "Administrador":
-        st.session_state.admin = True
-        admin_dashboard()
-
+    if "logged_in" not in st.session_state:
+        login()
     else:
-        st.session_state.admin = False
-        client_view()
+        if st.button("Cerrar Sesión"):
+            logout()
+            st.experimental_rerun()
 
-def caracterizacion():
-    st.title("Municipio de Deria")
-    st.write("""
-    **Municipio de Granada**
-    Fundada en 21 de abril de 1524, es conocida como “La gran sultana”, constituyéndose en uno de los asentamientos coloniales más antiguos de Centroamérica. Se distingue por la fusión de elementos arquitectónicos en la construcción de la ciudad.
-    """)
-    
-    # Dividir en dos columnas
-    col1, col2 = st.columns(2)
-    
-    # Menú desplegable para seleccionar el título
-    selected_info = col1.radio("Seleccionar información:", ["Extensión territorial", "Limita", "Población estimada",
-                                                         "Población urbana", "Población Rural", "Densidad poblacional",
-                                                         "Organización Territorial", "Religión más practicada",
-                                                         "Principal actividad económica", "Elecciones Municipales"])
-    
-    # Mostrar la información correspondiente en la segunda columna
-    if selected_info == "Extensión territorial":
-        col2.write("""
-        529.1km², representa el 56.95% del departamento.
-        """)
-        # Agregar imagen en la segunda columna
+        st.title("Encuesta de Licencia Ciudadana Municipal")
 
-    elif selected_info == "Limita":
-        col2.write("""
-        Al Norte con Tipitapa. 
-        Al Sur con Nandaime. 
-        Al Este con San Lorenzo y el lago Cocibolca. 
-        Al Oeste con Tisma, Masaya, Diría, Diriomo, Nandaime y laguna de apoyo.
-        """)
-    elif selected_info == "Población estimada":
-        col2.write("""
-        132,054 que representa el 61.62%
-        """)
-    # Continuar con el resto de los casos...
+        # File upload
+        st.subheader("Subir datos")
+        uploaded_file = st.file_uploader("Sube tu archivo CSV", type=["csv"])
+        if uploaded_file is not None:
+            df = pd.read_csv(uploaded_file)
 
-def cargar_csv():
-    st.subheader("Cargar CSV")
-    uploaded_file = st.file_uploader("Elige un archivo CSV", type="csv")
-    if uploaded_file:
-        df = pd.read_csv(uploaded_file)
-        st.write(df)
-        st.success("Archivo CSV cargado exitosamente")
-        return df
-    return None
+            st.subheader("Seleccionar opciones")
+            graph_type = st.selectbox("Selecciona el tipo de gráfico", ["Gráfico de barras", "Gráfico de pastel"])
+            questions = df.columns.tolist()
+            selected_question = st.selectbox("Selecciona la pregunta que deseas visualizar", questions)
 
-def descargar_csv(dataframe):
-    if dataframe is not None:
-        csv = dataframe.to_csv(index=False)
-        b64 = base64.b64encode(csv.encode()).decode()
-        href = f'<a href="data:file/csv;base64,{b64}" download="datos.csv">Descargar CSV</a>'
-        st.markdown(href, unsafe_allow_html=True)
+            # Color selection
+            custom_colors = st.color_picker("Seleccione color para las respuestas", value='#00B050', key="color_picker")
+            colors = [custom_colors]
 
-def admin_dashboard():
-    st.title("Dashboard de Administrador")
-    df = cargar_csv()
-    if df is not None:
-        st.subheader("Guardar CSV")
-        if st.button("Descargar datos"):
-            descargar_csv(df)
-
-
-def client_view():
-    static_csv_path = "static/data/LCMG1_Granada2024.csv"
-
-    df = pd.read_csv(static_csv_path, header=0)
-    
-
-    questions = {
-        "P09": "Genera o recibe algún tipo de ingreso (salarios, ventas, remesa, renta, jubilación, etc:)",
-        "P46": "Calificación e índice al trabajo realizado por el alcalde(sa) del municipio",
-        "P47": "Imagen del alcalde(sa) del municipio",
-        "CGM1CPM": "Conocimiento de los problemas del municipio",
-        "CGM2ROP": "Resolución oportuna de problemas",
-        "CGM3CRPM": "Capacidad para resolver los problemas del municipio",
-        "CGM4CC": "Comunicación con la ciudadanía",
-        "CGM5CGPM": "Confianza que generan en la población del municipio",
-        "LC": "Licencia Ciudadana Municipal",
-    }
-
-    col1, col2 = st.columns([1, 1])  # Column width adjustment
-
-    with col1:
-        st.subheader("Seleccionar pregunta")
-        selected_question_key = st.selectbox("Seleccionar pregunta", options=list(questions.keys()), format_func=lambda x: questions[x])
-        graph_type_key = selected_question_key + "_graph_type"  # Unique key for graph type radio button
-        graph_type = st.radio("Seleccionar tipo de gráfico", options=["Gráfico de barras", "Gráfico de barras horizontales", "Gráfico de pastel"], key=graph_type_key)
-        st.subheader(questions[selected_question_key])
-       
-        preguntas_seleccionadas = st.multiselect(
-            "Seleccionar preguntas para tabla cruzada",
-            options=[
-                "Sector: Sector",
-                "SexoEntrevistado: Sexo Entrevistado [Generaciones del Entrevistado]",
-                "GENERACIONES: GENERACIONES"
-            ],
-            format_func=lambda option: option.split(":")[1].strip()
-        )
-
-        if len(preguntas_seleccionadas) == 1:  # Only allow one selection
-            df = pd.read_csv(static_csv_path, header=0)
-            tabla_cruzada = calcular_tabla_cruzada(df, preguntas_seleccionadas, selected_question_key)
-            if tabla_cruzada is not None:
-                with st.expander("Ver tabla cruzada"):
-                    st.write(tabla_cruzada.round(1))
-            else:
-                st.warning("Alguna de las variables seleccionadas no existe en el DataFrame.")
-        elif len(preguntas_seleccionadas) > 1:
-            st.warning("Solo se permite seleccionar una variable para la tabla cruzada.")
-            
-
-    with col2:
-        st.subheader("Gráfico")
-        colores = ["#00B050", "#FFC000", "#C00000", "#0070C0"]  # Lista de colores específicos
-        plot_question(df, selected_question_key, graph_type, questions, font_size=18, colors=colores)  # Llamada a plot_question() con la lista de colores
-
-        with st.expander(f" '{questions[selected_question_key]}'"):
-            opciones_respuesta = calcular_opciones_respuesta(df, selected_question_key)
-            st.write(opciones_respuesta)
-
- # Carrusel de imágenes en la sección de "Inicio"
-   
+            if st.button("Generar gráfico"):
+                fig = plot_question(df, selected_question, graph_type, questions, colors=colors)
+                st.plotly_chart(fig)
 
 if __name__ == "__main__":
     main()
-
