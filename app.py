@@ -16,7 +16,7 @@ def main():
     st.markdown(page_bg_img, unsafe_allow_html=True)
 
     # Logo de la empresa
-    st.image('url_del_logo_de_la_empresa.png', use_column_width=True)
+    st.image('static/img/logo.png', use_column_width=True)
 
     # Título
     st.title('Inicio de Sesión')
