@@ -46,7 +46,7 @@ html_title_template = Template("""
     </style>
     <div class="header">
         <img src="data:image/png;base64,$logo" class="logo">
-        <h1 class="title-test">Bienvenido al Municipio de Granada</h1>
+        <h1 class="title-test">Bienvenido LCM</h1>
     </div>
 """)
 
