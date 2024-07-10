@@ -23,33 +23,35 @@ def html_title_template():
 def main():
     logo_base64 = load_logo(logo_image_path)
     st.markdown(html_title_template().format(logo_base64), unsafe_allow_html=True)
-    
-    # Add background image
+
+    if "authenticated" not in st.session_state:
+        st.session_state.authenticated = False
+
+    if not st.session_state.authenticated:
+        login(logo_base64)
+    else:
+        navigation()
+
+def login(logo_base64):
     st.markdown(
         f"""
         <style>
         .stApp {{
             background: url(data:image/png;base64,{base64.b64encode(open(background_image_path, "rb").read()).decode()});
-            background-size: cover
+            background-size: cover;
+        }}
+        .login-form {{
+            color: white;
         }}
         </style>
         """,
         unsafe_allow_html=True
     )
 
-    if "authenticated" not in st.session_state:
-        st.session_state.authenticated = False
-
-    if not st.session_state.authenticated:
-        login()
-    else:
-        navigation()
-
-def login():
     st.title("Inicio de sesión")
     
-    username = st.text_input("Usuario")
-    password = st.text_input("Contraseña", type="password")
+    username = st.text_input("Usuario", key="username", label_visibility="visible", placeholder="Ingrese su usuario", type="default", label_class="login-form")
+    password = st.text_input("Contraseña", key="password", label_visibility="visible", placeholder="Ingrese su contraseña", type="password", label_class="login-form")
     
     if st.button("Iniciar sesión"):
         if username == "admin" and password == "admin":
@@ -64,6 +66,17 @@ def login():
             st.error("Usuario o contraseña incorrecta")
 
 def navigation():
+    st.markdown(
+        """
+        <style>
+        .stApp {{
+            background: none;
+        }}
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+    
     selected = option_menu(
         menu_title=None,
         options=["Inicio", "Caracterización", "Administrador", "Cerrar Sesión"],
@@ -82,7 +95,7 @@ def navigation():
     elif selected == "Cerrar Sesión":
         st.session_state.authenticated = False
         st.session_state.admin = False
-        login()
+        main()
 
 def caracterizacion():
     st.title("Municipio de Deria")
@@ -200,11 +213,8 @@ def calcular_tabla_cruzada(df, preguntas_seleccionadas, selected_question_key):
         })
         tabla_cruzada = pd.crosstab(index=[df[p] for p in preguntas[:-1]], columns=df[preguntas[-1]])
         tabla_cruzada_porcentaje = tabla_cruzada.div(tabla_cruzada.sum(axis=1), axis=0) * 100
-        tabla_cruzada_porcentaje = tabla_cruzada_porcentaje.apply(lambda x: x.map('{:.1f}%'.format))
         return tabla_cruzada_porcentaje
     except KeyError as e:
-        st.error(f"Error: {e}. Alguna de las preguntas seleccionadas no existe en el DataFrame.")
-        st.write(f"Preguntas disponibles en el DataFrame: {list(df.columns)}")
         return None
 
 def calcular_opciones_respuesta(df, selected_question_key):
