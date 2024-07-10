@@ -58,7 +58,7 @@ def login():
     password = st.text_input("Contraseña", type="password")
     
     if st.button("Iniciar Sesión"):
-        if username == "admin" and password == "admin":
+        if username == "Usuario1" and password == "LCM2024":
             st.session_state["logged_in"] = True
             st.experimental_rerun()
         else:
