@@ -9,6 +9,22 @@ import hydralit_components as hc
 import datetime
 import numpy as np
 
+
+def login():
+    st.markdown(html_title_template.substitute(logo=load_logo(logo_image_path)), unsafe_allow_html=True)
+    
+    st.markdown('<div class="login-form">', unsafe_allow_html=True)
+    username = st.text_input("Usuario")
+    password = st.text_input("Contraseña", type="password")
+    
+    if st.button("Iniciar Sesión"):
+        if username == "Usuario1" and password == "LCM2024":
+            st.session_state["logged_in"] = True
+            st.experimental_rerun()
+        else:
+            st.error("Usuario o contraseña incorrectos")
+    st.markdown('</div>', unsafe_allow_html=True)
+
 # Path to the logo
 logo_image_path = "static/img/logo.png"
 
@@ -49,20 +65,6 @@ html_title_template = Template("""
     </div>
 """)
 
-def login():
-    st.markdown(html_title_template.substitute(logo=load_logo(logo_image_path)), unsafe_allow_html=True)
-    
-    st.markdown('<div class="login-form">', unsafe_allow_html=True)
-    username = st.text_input("Usuario")
-    password = st.text_input("Contraseña", type="password")
-    
-    if st.button("Iniciar Sesión"):
-        if username == "Usuario1" and password == "LCM2024":
-            st.session_state["logged_in"] = True
-            st.experimental_rerun()
-        else:
-            st.error("Usuario o contraseña incorrectos")
-    st.markdown('</div>', unsafe_allow_html=True)
 
 # Functions for data visualization and analysis
 def client_view():
