@@ -3,7 +3,6 @@ import pandas as pd
 from PIL import Image
 import plotly.express as px
 import base64
-import time
 from streamlit_option_menu import option_menu
 from string import Template
 import hydralit_components as hc
@@ -65,40 +64,7 @@ def login():
             st.error("Usuario o contraseña incorrectos")
     st.markdown('</div>', unsafe_allow_html=True)
 
-def main():
-    if "logged_in" not in st.session_state:
-        st.session_state["logged_in"] = False
-
-    if not st.session_state["logged_in"]:
-        login()
-    else:
-        st.sidebar.title("Opciones de Visualización")
-        selected = option_menu(
-            menu_title=None,
-            options=["Inicio", "Caracterización", "Administrador", "Cerrar Sesion"],
-            icons=["house", "person", "gear"],
-            menu_icon="cast",
-            default_index=0,
-            orientation="horizontal",
-        )
-
-        if selected == "Inicio":
-            st.session_state.admin = False
-            client_view()
-
-        elif selected == "Caracterización":
-            st.session_state.admin = False
-            caracterizacion()
-
-        elif selected == "Administrador":
-            st.session_state.admin = True
-            admin_dashboard()
-
-        else:
-            st.session_state.admin = False
-            st.session_state["logged_in"] = False
-            st.experimental_rerun()
-
+# Functions for data visualization and analysis
 def client_view():
     static_csv_path = "static/data/LCMG1_Granada2024.csv"
 
@@ -192,6 +158,7 @@ def caracterizacion():
         """)
     # Continuar con el resto de los casos...
 
+# Functions for CSV handling
 def cargar_csv():
     st.subheader("Cargar CSV")
     uploaded_file = st.file_uploader("Elige un archivo CSV", type="csv")
@@ -217,7 +184,7 @@ def admin_dashboard():
         if st.button("Descargar datos"):
             descargar_csv(df)
 
-
+# Functions for data analysis
 def calcular_tabla_cruzada(df, preguntas_seleccionadas, selected_question_key):
     try:
         preguntas = [pregunta.split(":")[0].strip() for pregunta in preguntas_seleccionadas]
@@ -235,46 +202,76 @@ def calcular_opciones_respuesta(df, selected_question_key):
     opciones_respuesta = df[selected_question_key].value_counts(normalize=True) * 100
     return opciones_respuesta
 
-def plot_question(df, selected_question_key, graph_type, questions, font_size=16, colors=None):
-    value_counts = df[selected_question_key].value_counts().sort_index()
-    question = questions[selected_question_key]
+def plot_question(df, question, graph_type, questions, font_size=14, colors=None):
+    if colors is None:
+        colors = px.colors.qualitative.Safe  # Default colors if not provided
+
+    question_data = df[question].value_counts(normalize=True) * 100
+    question_data = question_data.sort_index()  # Ensure the categories are sorted
 
     if graph_type == "Gráfico de barras":
-        fig = px.bar(
-            x=value_counts.index,
-            y=value_counts.values,
-            labels={"x": "Categoría", "y": "Conteo"},
-            title=question,
-            color=value_counts.index,
-            color_discrete_sequence=colors,
-        )
+        fig = px.bar(question_data, x=question_data.index, y=question_data.values, title=questions[question], text=question_data.values, color=question_data.index, color_discrete_sequence=colors)
     elif graph_type == "Gráfico de barras horizontales":
-        fig = px.bar(
-            x=value_counts.values,
-            y=value_counts.index,
-            orientation="h",
-            labels={"x": "Conteo", "y": "Categoría"},
-            title=question,
-            color=value_counts.index,
-            color_discrete_sequence=colors,
-        )
+        fig = px.bar(question_data, y=question_data.index, x=question_data.values, title=questions[question], text=question_data.values, orientation='h', color=question_data.index, color_discrete_sequence=colors)
     elif graph_type == "Gráfico de pastel":
-        fig = px.pie(
-            names=value_counts.index,
-            values=value_counts.values,
-            title=question,
-            color=value_counts.index,
-            color_discrete_sequence=colors,
-        )
+        fig = px.pie(question_data, values=question_data.values, names=question_data.index, title=questions[question], color=question_data.index, color_discrete_sequence=colors)
 
-    fig.update_layout(
-        title_font_size=font_size,
-        title_x=0.5,
-        font_size=14,
-        font_family="Arial",
-    )
+    fig.update_layout(title={'text': questions[question], 'x': 0.5}, font=dict(size=font_size))
+    fig.update_traces(texttemplate='%{text:.2f}%', textposition='outside')
+    st.plotly_chart(fig, use_container_width=True)
 
-    st.plotly_chart(fig)
+# Main function to handle routing
+def main():
+    if "logged_in" not in st.session_state:
+        st.session_state["logged_in"] = False
+
+    if st.session_state["logged_in"]:
+        # Sidebar for navigation
+        st.sidebar.title("Menú de Navegación")
+        role = st.sidebar.selectbox("Seleccionar Rol", ["Usuario", "Administrador"])
+
+        if role == "Usuario":
+            menu = option_menu(
+                menu_title="Menú",
+                options=["Visión General", "Visualización de Datos", "Caracterización"],
+                icons=["house", "graph-up-arrow", "person-badge"],
+                menu_icon="cast",
+                default_index=0,
+            )
+
+            if menu == "Visión General":
+                st.title("Visión General del Usuario")
+                st.write("Aquí va el contenido general para el usuario.")
+
+            elif menu == "Visualización de Datos":
+                client_view()
+
+            elif menu == "Caracterización":
+                caracterizacion()
+
+        elif role == "Administrador":
+            menu = option_menu(
+                menu_title="Menú de Administrador",
+                options=["Panel de Control", "Subir Datos", "Gestión de Usuarios"],
+                icons=["tools", "upload", "person-badge"],
+                menu_icon="cast",
+                default_index=0,
+            )
+
+            if menu == "Panel de Control":
+                admin_dashboard()
+
+            elif menu == "Subir Datos":
+                cargar_csv()
+
+            elif menu == "Gestión de Usuarios":
+                st.write("Funcionalidades de gestión de usuarios (pendiente de implementación).")
+
+        if st.sidebar.button("Cerrar Sesión"):
+            st.session_state["logged_in"] = False
+            st.experimental_rerun()
+    else:
+        login()
 
 if __name__ == "__main__":
     main()
