@@ -125,7 +125,7 @@ def client_view():
             st.write(opciones_respuesta)
 
 def caracterizacion():
-    st.title("Municipio de Deria")
+    st.title("Municipio de Granada")
     st.write("""
     **Municipio de Granada**
     Fundada en 21 de abril de 1524, es conocida como “La gran sultana”, constituyéndose en uno de los asentamientos coloniales más antiguos de Centroamérica. Se distingue por la fusión de elementos arquitectónicos en la construcción de la ciudad.
