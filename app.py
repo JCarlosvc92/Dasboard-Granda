@@ -130,17 +130,25 @@ def caracterizacion():
     **Municipio de Granada**
     Fundada en 21 de abril de 1524, es conocida como “La gran sultana”, constituyéndose en uno de los asentamientos coloniales más antiguos de Centroamérica. Se distingue por la fusión de elementos arquitectónicos en la construcción de la ciudad.
     """)
-    
+
     # Dividir en dos columnas
     col1, col2 = st.columns(2)
-    
+
     # Menú desplegable para seleccionar el título
     selected_info = col1.radio("Seleccionar información:", ["Extensión territorial", "Limita", "Población estimada",
-                                                         "Población urbana", "Población Rural", "Densidad poblacional",
-                                                         "Organización Territorial", "Religión más practicada",
-                                                         "Principal actividad económica", "Elecciones Municipales"])
-    
+                                                            "Población urbana", "Población Rural", "Densidad poblacional",
+                                                            "Organización Territorial", "Religión más practicada",
+                                                            "Principal actividad económica", "Elecciones Municipales"])
 
+    # Incluir el mapa SVG en la columna 2
+    svg_path = Path('static/img/granada.svg')
+    if svg_path.is_file():
+        col2.image(str(svg_path))
+    else:
+        col2.write("Mapa SVG no encontrado.")
+
+# Llamar a la función para mostrar la caracterización
+caracterizacion()
    
     
     
