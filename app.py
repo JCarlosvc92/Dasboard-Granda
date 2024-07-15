@@ -140,16 +140,7 @@ def caracterizacion():
                                                             "Organización Territorial", "Religión más practicada",
                                                             "Principal actividad económica", "Elecciones Municipales"])
 
-    # Incluir el mapa SVG en la columna 2
-    svg_path = Path('static/img/granada.svg')
-    if svg_path.is_file():
-        col2.image(str(svg_path))
-    else:
-        col2.write("Mapa SVG no encontrado.")
 
-# Llamar a la función para mostrar la caracterización
-caracterizacion()
-   
     
     
     # Mostrar la información correspondiente en la segunda columna
