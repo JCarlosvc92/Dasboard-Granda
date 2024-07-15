@@ -134,24 +134,36 @@ def caracterizacion():
     # Dividir en dos columnas
     col1, col2 = st.columns(2)
 
-    # Menú desplegable para seleccionar el título
-    selected_info = col1.radio("Seleccionar información:", ["Extensión territorial", "Limita", "Población estimada",
-                                                            "Población urbana", "Población Rural", "Densidad poblacional",
-                                                            "Organización Territorial", "Religión más practicada",
-                                                            "Principal actividad económica", "Elecciones Municipales"])
+# Selección de información (esto es solo un ejemplo, adapta según tu lógica)
+selected_info = st.selectbox("Selecciona la información", ["Extensión territorial", "Limita"])
 
-
-    
-    
-    # Mostrar la información correspondiente en la segunda columna
-    if selected_info == "Extensión territorial":
-        col2.write("""
-        529.1km², representa el 56.95% del departamento.
-        """)
-        # Agregar imagen en la segunda columna
-
-    col2.image("static/img/GRANADA.png")
-    
+# Mostrar información en la segunda columna
+if selected_info == "Extensión territorial":
+    col2.write("""
+    529.1km², representa el 56.95% del departamento.
+    """)
+    # Agregar una imagen en la segunda columna
+    col2.image("ruta/a/tu/imagen.png")
+    # Agregar un archivo SVG en la segunda columna
+    col2.markdown("""
+    <div>
+        <img src="ruta/a/tu/archivo.svg" alt="Mapa SVG">
+    </div>
+    """, unsafe_allow_html=True)
+elif selected_info == "Limita":
+    col2.write("""
+    Información sobre los límites del departamento.
+    """)
+    # Agregar una imagen diferente en la segunda columna
+    col2.image("ruta/a/tu/otra_imagen.png")
+    # Agregar un archivo SVG diferente en la segunda columna
+    col2.markdown("""
+    <div>
+        <img src="ruta/a/tu/otro_archivo.svg" alt="Mapa SVG">
+    </div>
+    """, unsafe_allow_html=True)
+else:
+    col2.write("Selecciona una opción válida.")
 
     elif selected_info == "Limita":
         col2.write("""
