@@ -125,15 +125,27 @@ def client_view():
             st.write(opciones_respuesta)
 
 def caracterizacion():
-    st.title("Municipio de Granada")
+    st.title("Municipio de Deria")
     st.write("""
     **Municipio de Granada**
     Fundada en 21 de abril de 1524, es conocida como “La gran sultana”, constituyéndose en uno de los asentamientos coloniales más antiguos de Centroamérica. Se distingue por la fusión de elementos arquitectónicos en la construcción de la ciudad.
     """)
-
+    
     # Dividir en dos columnas
     col1, col2 = st.columns(2)
-
+    
+    # Menú desplegable para seleccionar el título
+    selected_info = col1.radio("Seleccionar información:", ["Extensión territorial", "Limita", "Población estimada",
+                                                         "Población urbana", "Población Rural", "Densidad poblacional",
+                                                         "Organización Territorial", "Religión más practicada",
+                                                         "Principal actividad económica", "Elecciones Municipales"])
+    
+    # Mostrar la información correspondiente en la segunda columna
+    if selected_info == "Extensión territorial":
+        col2.write("""
+        529.1km², representa el 56.95% del departamento.
+        """)
+        # Agregar imagen en la segunda columna
 
     elif selected_info == "Limita":
         col2.write("""
@@ -147,6 +159,7 @@ def caracterizacion():
         132,054 que representa el 61.62%
         """)
     # Continuar con el resto de los casos...
+
 
 # Functions for CSV handling
 def cargar_csv():
