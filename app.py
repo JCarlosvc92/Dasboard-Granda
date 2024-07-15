@@ -150,6 +150,9 @@ def caracterizacion():
         """)
         # Agregar imagen en la segunda columna
 
+    col2.image("static/img/GRANADA.png")
+    
+
     elif selected_info == "Limita":
         col2.write("""
         Al Norte con Tipitapa. 
