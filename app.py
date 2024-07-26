@@ -139,6 +139,9 @@ def caracterizacion():
                                                          "Población urbana", "Población Rural", "Densidad poblacional",
                                                          "Organización Territorial", "Religión más practicada",
                                                          "Principal actividad económica", "Elecciones Municipales"])
+
+    
+    col2.image("path/to/extension_territorial.png", use_column_width=True)
     
     # Mostrar la información correspondiente en la segunda columna
     if selected_info == "Extensión territorial":
@@ -146,6 +149,7 @@ def caracterizacion():
         529.1km², representa el 56.95% del departamento.
         """)
         # Agregar imagen en la segunda columna
+    col2.image("path/to/limita.png", use_column_width=True)  # Ajusta la ruta de la imagen
 
     elif selected_info == "Limita":
         col2.write("""
@@ -219,7 +223,7 @@ def calcular_opciones_respuesta(df, pregunta):
         })
 
         
-
+        
         # Calcular opciones de respuesta normalizadas
         opciones_respuesta = df['categoria_combinada'].value_counts(normalize=True) * 100
 
