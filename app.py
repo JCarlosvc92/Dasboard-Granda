@@ -28,7 +28,7 @@ def login():
 # Path to the logo
 logo_image_path = "static/img/logo.png"
 
-# Function to load logo and convert to base64
+# Function to load logo and codnvert to base64
 def load_logo(logo_path):
     with open(logo_path, "rb") as image_file:
         encoded_logo = base64.b64encode(image_file.read()).decode()
@@ -141,7 +141,7 @@ def caracterizacion():
                                                          "Principal actividad económica", "Elecciones Municipales"])
 
     
-    col2.image("path/to/extension_territorial.png", use_column_width=True)
+    
     
     # Mostrar la información correspondiente en la segunda columna
     if selected_info == "Extensión territorial":
