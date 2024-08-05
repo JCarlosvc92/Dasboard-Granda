@@ -217,7 +217,7 @@ def calcular_opciones_respuesta(df, pregunta):
                 sumas_categorias['Regular'] += valor
             elif 'Pésimo' in categoria or 'Malo' in categoria:
                 sumas_categorias['Malo/Pésimo'] += valor
-            elif 'NsNr' in categoria or 'No conoce' en categoria:
+            elif 'NsNr' in categoria or 'No conoce' in categoria:
                 sumas_categorias['NsNr/No conoce'] += valor
 
         sumas_categorias = {categoria: round(valor, 1) for categoria, valor in sumas_categorias.items()}
