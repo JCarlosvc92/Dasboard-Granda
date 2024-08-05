@@ -217,7 +217,7 @@ def calcular_opciones_respuesta(df, pregunta):
                 sumas_categorias['Regular'] += valor
             elif 'Pésimo' in categoria or 'Malo' in categoria:
                 sumas_categorias['Malo/Pésimo'] += valor
-            elif 'NsNr' in categoria or 'No conoce' in categoria:
+            elif 'NsNr' in categoria or 'No conoce' en categoria:
                 sumas_categorias['NsNr/No conoce'] += valor
 
         sumas_categorias = {categoria: round(valor, 1) for categoria, valor in sumas_categorias.items()}
@@ -340,7 +340,7 @@ def main():
     
     if st.session_state["logged_in"]:
         st.sidebar.title("Navegación")
-        options = st.sidebar.radio("Ir a:", ["Vista Cliente", "Caracterización", "Admin Dashboard"])
+        options = st.sidebar.radio("Ir a:", ["Vista Cliente", "Caracterización", "Admin Dashboard", "Cerrar Sesión"])
         
         if options == "Vista Cliente":
             df = pd.read_csv("static/data/LCMG1_Granada2024.csv")
@@ -349,6 +349,9 @@ def main():
             caracterizacion()
         elif options == "Admin Dashboard":
             admin_dashboard()
+        elif options == "Cerrar Sesión":
+            st.session_state["logged_in"] = False
+            st.experimental_rerun()  # Reinicia la aplicación para volver a la pantalla de login
     else:
         login()
 
