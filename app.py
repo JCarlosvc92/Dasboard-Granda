@@ -206,7 +206,7 @@ def calcular_opciones_respuesta(df, pregunta):
             '8 Regular': 'Regular', '5': 'NsNr/No conoce'
         })
 
-      def calcular_opciones_respuesta(df, pregunta):
+ def calcular_opciones_respuesta(df, pregunta):
     preguntas_procesadas = ["P46", "P47", "CGM1CPM", "CGM2ROP", "CGM3CRPM", "CGM4CC", "CGM5CGPM"]
 
     if pregunta in preguntas_procesadas:
