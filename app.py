@@ -124,68 +124,9 @@ def client_view():
             opciones_respuesta = calcular_opciones_respuesta(df, selected_question_key)
             st.write(opciones_respuesta)
 
-def caracterizacion():
-    st.title("Municipio de Granada")
-    st.write("""
-    **Municipio de Granada**
-    Fundada en 21 de abril de 1524, es conocida como “La gran sultana”, constituyéndose en uno de los asentamientos coloniales más antiguos de Centroamérica. Se distingue por la fusión de elementos arquitectónicos en la construcción de la ciudad.
-    """)
-    
-    # Dividir en dos columnas
-    col1, col2 = st.columns(2)
-    
-    # Menú desplegable para seleccionar el título
-    selected_info = col1.radio("Seleccionar información:", ["Extensión territorial", "Limita", "Población estimada",
-                                                         "Población urbana", "Población Rural", "Densidad poblacional",
-                                                         "Organización Territorial", "Religión más practicada",
-                                                         "Principal actividad económica", "Elecciones Municipales"])
-    
-    # Mostrar la información correspondiente en la segunda columna
-    if selected_info == "Extensión territorial":
-        col2.write("""
-        529.1km², representa el 56.95% del departamento.
-        """)
-        # Agregar imagen en la segunda columna
-
-    elif selected_info == "Limita":
-        col2.write("""
-        Al Norte con Tipitapa. 
-        Al Sur con Nandaime. 
-        Al Este con San Lorenzo y el lago Cocibolca. 
-        Al Oeste con Tisma, Masaya, Diría, Diriomo, Nandaime y laguna de apoyo.
-        """)
-    elif selected_info == "Población estimada":
-        col2.write("""
-        132,054 que representa el 61.62%
-        """)
-    # Continuar con el resto de los casos...
 
 
 # Functions for CSV handling
-def cargar_csv():
-    st.subheader("Cargar CSV")
-    uploaded_file = st.file_uploader("Elige un archivo CSV", type="csv")
-    if uploaded_file:
-        df = pd.read_csv(uploaded_file)
-        st.write(df)
-        st.success("Archivo CSV cargado exitosamente")
-        return df
-    return None
-
-def descargar_csv(dataframe):
-    if dataframe is not None:
-        csv = dataframe.to_csv(index=False)
-        b64 = base64.b64encode(csv.encode()).decode()
-        href = f'<a href="data:file/csv;base64,{b64}" download="datos.csv">Descargar CSV</a>'
-        st.markdown(href, unsafe_allow_html=True)
-
-def admin_dashboard():
-    st.title("Dashboard de Administrador")
-    df = cargar_csv()
-    if df is not None:
-        st.subheader("Guardar CSV")
-        if st.button("Descargar datos"):
-            descargar_csv(df)
 
 # Functions for data analysis
 def calcular_tabla_cruzada(df, preguntas_seleccionadas, selected_question_key):
