@@ -206,6 +206,16 @@ def calcular_opciones_respuesta(df, pregunta):
             '8 Regular': 'Regular', '5': 'NsNr/No conoce'
         })
 
+      def calcular_opciones_respuesta(df, pregunta):
+    preguntas_procesadas = ["P46", "P47", "CGM1CPM", "CGM2ROP", "CGM3CRPM", "CGM4CC", "CGM5CGPM"]
+
+    if pregunta in preguntas_procesadas:
+        df['categoria_combinada'] = df[pregunta].replace({
+            '9 Bueno': 'Bueno/Muy bueno', '10 Muy bueno': 'Bueno/Muy bueno',
+            '6 Pésimo': 'Pésimo/Malo', '7 Malo': 'Pésimo/Malo',
+            '8 Regular': 'Regular', '5': 'NsNr/No conoce'
+        })
+
         opciones_respuesta = df['categoria_combinada'].value_counts(normalize=True) * 100
 
         sumas_categorias = {'Muy bueno/bueno': 0, 'Regular': 0, 'Malo/Pésimo': 0, 'NsNr/No conoce': 0}
