@@ -319,33 +319,7 @@ def main():
                 default_index=0,
             )
 
-            if menu == "Visión General":
-                st.title("Visión General del Usuario")
-                st.write("Aquí va el contenido general para el usuario.")
-
-            elif menu == "Visualización de Datos":
-                client_view()
-
-            elif menu == "Caracterización":
-                caracterizacion()
-
-        elif role == "Administrador":
-            menu = option_menu(
-                menu_title="Menú de Administrador",
-                options=["Panel de Control", "Subir Datos", "Gestión de Usuarios"],
-                icons=["tools", "upload", "person-badge"],
-                menu_icon="cast",
-                default_index=0,
-            )
-
-            if menu == "Panel de Control":
-                admin_dashboard()
-
-            elif menu == "Subir Datos":
-                cargar_csv()
-
-            elif menu == "Gestión de Usuarios":
-                st.write("Funcionalidades de gestión de usuarios (pendiente de implementación).")
+      
 
         if st.sidebar.button("Cerrar Sesión"):
             st.session_state["logged_in"] = False
