@@ -3,12 +3,7 @@ import pandas as pd
 from PIL import Image
 import plotly.express as px
 import base64
-from streamlit_option_menu import option_menu
 from string import Template
-import hydralit_components as hc
-import datetime
-import numpy as np
-
 
 def login():
     st.markdown(html_title_template.substitute(logo=load_logo(logo_image_path)), unsafe_allow_html=True)
@@ -64,7 +59,6 @@ html_title_template = Template("""
         <h1 class="title-test">Bienvenido LCM</h1>
     </div>
 """)
-
 
 # Functions for data visualization and analysis
 def client_view():
@@ -160,7 +154,6 @@ def caracterizacion():
         """)
     # Continuar con el resto de los casos...
 
-
 # Functions for CSV handling
 def cargar_csv():
     st.subheader("Cargar CSV")
@@ -200,168 +193,54 @@ def calcular_tabla_cruzada(df, preguntas_seleccionadas, selected_question_key):
         tabla_cruzada_porcentaje = tabla_cruzada_porcentaje.apply(lambda x: x.map('{:.1f}%'.format))
         return tabla_cruzada_porcentaje
     except KeyError as e:
-        st.error(f"Error: {e}. Alguna de las preguntas seleccionadas no existe en el DataFrame.")
-        st.write(f"Preguntas disponibles en el DataFrame: {list(df.columns)}")
+        st.warning(f"Variable no encontrada en el DataFrame: {e}")
         return None
 
+def calcular_opciones_respuesta(df, question_key):
+    unique_values = df[question_key].value_counts(normalize=True) * 100
+    unique_values = unique_values.reset_index()
+    unique_values.columns = [question_key, 'Porcentaje']
+    unique_values['Porcentaje'] = unique_values['Porcentaje'].map('{:.1f}%'.format)
+    return unique_values
 
-def calcular_opciones_respuesta(df, pregunta):
-    # Definir las preguntas que deben ser procesadas por esta función
-    preguntas_procesadas = ["P46", "P47", "CGM1CPM", "CGM2ROP", "CGM3CRPM", "CGM4CC", "CGM5CGPM"]  # Reemplaza con las preguntas que deseas procesar
-
-    # Verificar si la pregunta especificada debe ser procesada
-    if pregunta in preguntas_procesadas:
-        # Crear una nueva columna para representar la categoría combinada
-        df['categoria_combinada'] = df[pregunta].replace({
-            '9 Bueno': 'Bueno/Muy bueno', '10 Muy bueno': 'Bueno/Muy bueno',
-            '6 Pésimo': 'Pésimo/Malo', '7 Malo': 'Pésimo/Malo',
-            '8 Regular': 'Regular', '5': 'NsNr/No conoce'
-        })
-
+def plot_question(df, selected_question_key, graph_type, questions, font_size=18, colors=None):
+    response_counts = df[selected_question_key].value_counts().sort_index()
+    
+    if graph_type == "Gráfico de barras":
+        fig = px.bar(response_counts, x=response_counts.index, y=response_counts.values,
+                     title=questions[selected_question_key], labels={'x': 'Respuestas', 'y': 'Frecuencia'},
+                     color_discrete_sequence=colors)
+    elif graph_type == "Gráfico de barras horizontales":
+        fig = px.bar(response_counts, x=response_counts.values, y=response_counts.index, orientation='h',
+                     title=questions[selected_question_key], labels={'x': 'Frecuencia', 'y': 'Respuestas'},
+                     color_discrete_sequence=colors)
+    elif graph_type == "Gráfico de pastel":
+        fig = px.pie(response_counts, values=response_counts.values, names=response_counts.index,
+                     title=questions[selected_question_key], color_discrete_sequence=colors)
         
+    fig.update_layout(font=dict(size=font_size))
+    st.plotly_chart(fig)
 
-        # Calcular opciones de respuesta normalizadas
-        opciones_respuesta = df['categoria_combinada'].value_counts(normalize=True) * 100
-
-        # Crear un diccionario para almacenar las sumas de las categorías combinadas
-        sumas_categorias = {'Muy bueno/bueno': 0, 'Regular': 0, 'Malo/Pésimo': 0, 'NsNr/No conoce': 0}
-
-        # Iterar sobre las opciones de respuesta y sumar las categorías combinadas
-        for categoria, valor in opciones_respuesta.items():
-            if 'Bueno' in categoria or 'Muy bueno' in categoria:
-                sumas_categorias['Muy bueno/bueno'] += valor
-            elif 'Regular' in categoria:
-                sumas_categorias['Regular'] += valor
-            elif 'Pésimo' in categoria or 'Malo' in categoria:
-                sumas_categorias['Malo/Pésimo'] += valor
-            elif 'NsNr' in categoria or 'No conoce' in categoria:
-                sumas_categorias['NsNr/No conoce'] += valor
-
-        # Redondear las sumas de las categorías combinadas
-        sumas_categorias = {categoria: round(valor, 1) for categoria, valor in sumas_categorias.items()}
-
-        return sumas_categorias
-    else:
-        # Si la pregunta no debe ser procesada, devolver las opciones de respuesta normales
-        opciones_respuesta = df[pregunta].value_counts(normalize=True) * 100
-        return opciones_respuesta.round(1)
-
-def plot_question(df, question, graph_type, questions, font_size=18, colors=None):
-    opciones_respuesta = calcular_opciones_respuesta(df, question)  # Calcular opciones de respuesta
-
-    if question in ["P46", "P47", "CGM1CPM", "CGM2ROP", "CGM3CRPM", "CGM4CC", "CGM5CGPM"]:
-        data = opciones_respuesta
-        labels = list(opciones_respuesta.keys())
-        values = list(opciones_respuesta.values())
-    else:
-        data = df[question].value_counts(normalize=True) * 100
-        labels = data.index
-        values = data.values
-    
-    # Calcular la media de todas las respuestas
-    all_responses = df[df[question].apply(lambda x: str(x).isdigit())][question].astype(int)
-    mean_response = all_responses.mean()
-    
-    # Mostrar la media encima del gráfico
-    st.write(f"Media de la pregunta: {mean_response:.2f}%")
-
-    # Verificar si 'No opina/no conoce' está en las etiquetas y si hay datos para esta categoría
-    if "No opina/No conoce" in labels and len(df[df[question] == "No opina/No conoce"]) > 0:
-     show_no_opina = True
-     no_opina_index = labels.index("No opina/No conoce")
-    else:
-     show_no_opina = False
-
-    # Filtrar los valores de 'No opina/no conoce'
-    if "No opina/No conoce" in labels and not show_no_opina:
-        idx = labels.index("No opina/No conoce")
-        del labels[idx]
-        del values[idx]
-
-
-
-    if question == "P09":
-        if colors:
-            # Definir colores personalizados para sí y no
-            custom_colors = ['#00B050' if label == 'Sí' else '#C00000' for label in labels]
-            if show_no_opina:
-                custom_colors.append("#808080")  # Agregar un color para 'No opina/no conoce'
-            fig = px.bar(x=labels, y=values,
-                         labels={'x': 'Respuesta', 'y': 'Porcentaje'},
-                         color=labels,
-                         color_discrete_map={val: col for val, col in zip(labels, custom_colors)})
-        else:
-            fig = px.bar(x=labels, y=values,
-                         labels={'x': 'Respuesta', 'y': 'Porcentaje'})
-    elif question == "LC":  # Condiciones de color específicas para la pregunta "Licencia Ciudadana Municipal"
-        custom_colors = []
-        for label in labels:
-            if label == "Aprobación":
-                custom_colors.append("#00B050")  # Aprobación en verde
-            elif label == "Apropiación":
-                custom_colors.append("#92D050")  # Apropiación en un tono de verde más claro
-            elif label == "Aceptación":
-                custom_colors.append("#FFC000")  # Aceptación en amarillo
-            elif label == "Rechazo":
-                custom_colors.append("#C00000")  # Rechazo en rojo
-        if show_no_opina:
-            custom_colors.append("#808080")  # Agregar un color para 'No opina/no conoce'
-        if graph_type == "Gráfico de barras":
-            fig = px.bar(x=labels, y=values,
-                         labels={'x': 'Respuesta', 'y': 'Porcentaje'},
-                         color=labels,
-                         color_discrete_map={val: col for val, col in zip(labels, custom_colors)})
-        elif graph_type == "Gráfico de barras horizontales":
-            fig = px.bar(x=values, y=labels, orientation='h',
-                         labels={'y': 'Respuesta', 'x': 'Porcentaje'},
-                         color=labels,
-                         color_discrete_map={val: col for val, col in zip(labels, custom_colors)})
-        elif graph_type == "Gráfico de pastel":
-            fig = px.pie(names=labels,
-                         values=values,
-                         title=f"Frecuencia de respuestas para {questions[question]}",
-                         color=labels,
-                         color_discrete_map={val: col for val, col in zip(labels, custom_colors)})
-    else:
-        if graph_type == "Gráfico de barras":
-            if colors:
-                fig = px.bar(x=labels, y=values,
-                             labels={'x': 'Respuesta', 'y': 'Porcentaje'},
-                             color=labels,
-                             color_discrete_map={val: col for val, col in zip(labels, colors)})
-            else:
-                fig = px.bar(x=labels, y=values,
-                             labels={'x': 'Respuesta', 'y': 'Porcentaje'})
-        elif graph_type == "Gráfico de barras horizontales":
-            if colors:
-                fig = px.bar(x=values, y=labels, orientation='h',
-                             labels={'y': 'Respuesta', 'x': 'Porcentaje'},
-                             color=labels,
-                             color_discrete_map={val: col for val, col in zip(labels, colors)})
-            else:
-                fig = px.bar(x=values, y=labels, orientation='h',
-                             labels={'y': 'Respuesta', 'x': 'Porcentaje'})
-        elif graph_type == "Gráfico de pastel":
-            if colors:
-                fig = px.pie(names=labels,
-                             values=values,
-                             title=f"Frecuencia de respuestas para {questions[question]}",
-                             color=labels,
-                             color_discrete_map={val: col for val, col in zip(labels, colors)})
-            else:
-                fig = px.pie(names=labels,
-                             values=values,
-                             title=f"Frecuencia de respuestas para {questions[question]}")
-
-    if fig:
-        fig.update_traces(texttemplate='%{value:.1f}%', textfont_size=font_size)
-        fig.update_layout(font=dict(size=font_size))  # Ajustar el tamaño de fuente global
-        st.plotly_chart(fig)
-
-
-# Main function to handle routing
+# Main application logic
 def main():
+    st.set_page_config(page_title="LCM Granada", layout="wide")
+
+    if "logged_in" not in st.session_state:
+        st.session_state["logged_in"] = False
+    
+    if not st.session_state["logged_in"]:
         login()
+    else:
+        menu = ["Cliente", "Administrador", "Cerrar Sesión"]
+        choice = st.sidebar.selectbox("Menu", menu)
+        
+        if choice == "Cliente":
+            client_view()
+        elif choice == "Administrador":
+            admin_dashboard()
+        elif choice == "Cerrar Sesión":
+            st.session_state["logged_in"] = False
+            st.experimental_rerun()
 
 if __name__ == "__main__":
     main()
