@@ -158,9 +158,11 @@ def cargar_csv():
     uploaded_file = st.file_uploader("Elige un archivo CSV", type="csv")
     if uploaded_file:
         df = pd.read_csv(uploaded_file)
-        st.write(df)
+        st.session_state["dataframe"] = df  # Guardar en session_state
         st.success("Archivo CSV cargado exitosamente")
         return df
+    elif "dataframe" in st.session_state:
+        return st.session_state["dataframe"]
     return None
 
 def descargar_csv(dataframe):
@@ -196,164 +198,55 @@ def calcular_tabla_cruzada(df, preguntas_seleccionadas, selected_question_key):
         return None
 
 
-def calcular_opciones_respuesta(df, pregunta):
-    preguntas_procesadas = ["P46", "P47", "CGM1CPM", "CGM2ROP", "CGM3CRPM", "CGM4CC", "CGM5CGPM"]
+def calcular_opciones_respuesta(df, selected_question_key):
+    if selected_question_key in df.columns:
+        return df[selected_question_key].value_counts()
+    return pd.Series()
 
-    if pregunta in preguntas_procesadas:
-        df['categoria_combinada'] = df[pregunta].replace({
-            '9 Bueno': 'Bueno/Muy bueno', '10 Muy bueno': 'Bueno/Muy bueno',
-            '6 Pésimo': 'Pésimo/Malo', '7 Malo': 'Pésimo/Malo',
-            '8 Regular': 'Regular', '5': 'NsNr/No conoce'
-        })
+def plot_question(df, selected_question_key, graph_type, questions, font_size, colors):
+    question_column = selected_question_key
+    question_text = questions[selected_question_key]
 
-        opciones_respuesta = df['categoria_combinada'].value_counts(normalize=True) * 100
-
-        sumas_categorias = {'Muy bueno/bueno': 0, 'Regular': 0, 'Malo/Pésimo': 0, 'NsNr/No conoce': 0}
-
-        for categoria, valor in opciones_respuesta.items():
-            if 'Bueno' in categoria or 'Muy bueno' in categoria:
-                sumas_categorias['Muy bueno/bueno'] += valor
-            elif 'Regular' in categoria:
-                sumas_categorias['Regular'] += valor
-            elif 'Pésimo' in categoria or 'Malo' in categoria:
-                sumas_categorias['Malo/Pésimo'] += valor
-            elif 'NsNr' in categoria or 'No conoce' in categoria:
-                sumas_categorias['NsNr/No conoce'] += valor
-
-        sumas_categorias = {categoria: round(valor, 1) for categoria, valor in sumas_categorias.items()}
-
-        return sumas_categorias
+    if graph_type == "Gráfico de barras":
+        fig = px.bar(df, x=question_column, color=question_column, color_discrete_sequence=colors, title=question_text)
+    elif graph_type == "Gráfico de barras horizontales":
+        fig = px.bar(df, y=question_column, color=question_column, color_discrete_sequence=colors, title=question_text, orientation='h')
+    elif graph_type == "Gráfico de pastel":
+        fig = px.pie(df, names=question_column, title=question_text, color_discrete_sequence=colors)
     else:
-        opciones_respuesta = df[pregunta].value_counts(normalize=True) * 100
-        return opciones_respuesta.round(1)
+        st.error("Tipo de gráfico no reconocido")
+        return
 
-def plot_question(df, question, graph_type, questions, font_size=18, colors=None):
-    opciones_respuesta = calcular_opciones_respuesta(df, question)
-
-    if question in ["P46", "P47", "CGM1CPM", "CGM2ROP", "CGM3CRPM", "CGM4CC", "CGM5CGPM"]:
-        data = opciones_respuesta
-        labels = list(opciones_respuesta.keys())
-        values = list(opciones_respuesta.values())
-    else:
-        data = df[question].value_counts(normalize=True) * 100
-        labels = data.index
-        values = data.values
-    
-    all_responses = df[df[question].apply(lambda x: str(x).isdigit())][question].astype(int)
-    mean_response = all_responses.mean()
-    
-    st.write(f"Media de la pregunta: {mean_response:.2f}%")
-
-    if "No opina/No conoce" in labels and len(df[df[question] == "No opina/No conoce"]) > 0:
-        show_no_opina = True
-        no_opina_index = labels.index("No opina/No conoce")
-    else:
-        show_no_opina = False
-
-    if "No opina/No conoce" in labels and not show_no_opina:
-        idx = labels.index("No opina/No conoce")
-        del labels[idx]
-        del values[idx]
-
-    if question == "P09":
-        if colors:
-            custom_colors = ['#00B050' if label == 'Sí' else '#C00000' for label in labels]
-            if show_no_opina:
-                custom_colors.append("#808080")
-            fig = px.bar(x=labels, y=values,
-                         labels={'x': 'Respuesta', 'y': 'Porcentaje'},
-                         color=labels,
-                         color_discrete_map={val: col for val, col in zip(labels, custom_colors)})
-        else:
-            fig = px.bar(x=labels, y=values,
-                         labels={'x': 'Respuesta', 'y': 'Porcentaje'})
-    elif question == "LC":
-        custom_colors = []
-        for label in labels:
-            if label == "Aprobación":
-                custom_colors.append("#00B050")
-            elif label == "Apropiación":
-                custom_colors.append("#92D050")
-            elif label == "Aceptación":
-                custom_colors.append("#FFC000")
-            elif label == "Rechazo":
-                custom_colors.append("#C00000")
-        if show_no_opina:
-            custom_colors.append("#808080")
-        if graph_type == "Gráfico de barras":
-            fig = px.bar(x=labels, y=values,
-                         labels={'x': 'Respuesta', 'y': 'Porcentaje'},
-                         color=labels,
-                         color_discrete_map={val: col for val, col in zip(labels, custom_colors)})
-        elif graph_type == "Gráfico de barras horizontales":
-            fig = px.bar(x=values, y=labels, orientation='h',
-                         labels={'y': 'Respuesta', 'x': 'Porcentaje'},
-                         color=labels,
-                         color_discrete_map={val: col for val, col in zip(labels, custom_colors)})
-        elif graph_type == "Gráfico de pastel":
-            fig = px.pie(names=labels,
-                         values=values,
-                         title=f"Frecuencia de respuestas para {questions[question]}",
-                         color=labels,
-                         color_discrete_map={val: col for val, col in zip(labels, custom_colors)})
-    else:
-        if graph_type == "Gráfico de barras":
-            if colors:
-                fig = px.bar(x=labels, y=values,
-                             labels={'x': 'Respuesta', 'y': 'Porcentaje'},
-                             color=labels,
-                             color_discrete_map={val: col for val, col in zip(labels, colors)})
-            else:
-                fig = px.bar(x=labels, y=values,
-                             labels={'x': 'Respuesta', 'y': 'Porcentaje'})
-        elif graph_type == "Gráfico de barras horizontales":
-            if colors:
-                fig = px.bar(x=values, y=labels, orientation='h',
-                             labels={'y': 'Respuesta', 'x': 'Porcentaje'},
-                             color=labels,
-                             color_discrete_map={val: col for val, col in zip(labels, colors)})
-            else:
-                fig = px.bar(x=values, y=labels, orientation='h',
-                             labels={'y': 'Respuesta', 'x': 'Porcentaje'})
-        elif graph_type == "Gráfico de pastel":
-            if colors:
-                fig = px.pie(names=labels,
-                             values=values,
-                             title=f"Frecuencia de respuestas para {questions[question]}",
-                             color=labels,
-                             color_discrete_map={val: col for val, col in zip(labels, colors)})
-            else:
-                fig = px.pie(names=labels,
-                             values=values,
-                             title=f"Frecuencia de respuestas para {questions[question]}")
-
-    if fig:
-        fig.update_traces(texttemplate='%{value:.1f}%', textfont_size=font_size)
-        fig.update_layout(font=dict(size=font_size))
-        st.plotly_chart(fig)
+    fig.update_layout(font=dict(size=font_size))
+    st.plotly_chart(fig)
 
 
-# Main function to handle routing
+# Main App Logic
 def main():
-    if "logged_in" not in st.session_state:
-        st.session_state["logged_in"] = False
-    
-    if st.session_state["logged_in"]:
-        st.sidebar.title("Navegación")
-        options = st.sidebar.radio("Ir a:", ["Vista Cliente", "Caracterización", "Admin Dashboard", "Cerrar Sesión"])
-        
-        if options == "Vista Cliente":
-            df = pd.read_csv("static/data/LCMG1_Granada2024.csv")
-            client_view(df)
-        elif options == "Caracterización":
-            caracterizacion()
-        elif options == "Admin Dashboard":
+    st.set_page_config(page_title="Dashboard", page_icon=":guardsman:", layout="wide")
+
+    with st.sidebar:
+        selected = option_menu("Menu", ["Inicio", "Administrador", "Caracterización"], icons=['house', 'file-earmark', 'info'], menu_icon="cast")
+
+    if selected == "Inicio":
+        if "logged_in" not in st.session_state or not st.session_state["logged_in"]:
+            login()
+        else:
+            st.session_state["logged_in"] = True
+            st.title("Bienvenido a la aplicación")
+            st.write("Selecciona una opción en el menú de la izquierda.")
+
+    elif selected == "Administrador":
+        if "logged_in" in st.session_state and st.session_state["logged_in"]:
             admin_dashboard()
-        elif options == "Cerrar Sesión":
-            st.session_state["logged_in"] = False
-            st.experimental_rerun()  # Reinicia la aplicación para volver a la pantalla de login
-    else:
-        login()
+        else:
+            st.write("Debes iniciar sesión para acceder a esta sección.")
+
+    elif selected == "Caracterización":
+        if "logged_in" in st.session_state and st.session_state["logged_in"]:
+            caracterizacion()
+        else:
+            st.write("Debes iniciar sesión para acceder a esta sección.")
 
 if __name__ == "__main__":
     main()
