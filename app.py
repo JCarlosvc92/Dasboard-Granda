@@ -10,24 +10,6 @@ import datetime
 import numpy as np
 
 
-def login():
-    st.markdown(html_title_template.substitute(logo=load_logo(logo_image_path)), unsafe_allow_html=True)
-    
-    st.markdown('<div class="login-form">', unsafe_allow_html=True)
-    username = st.text_input("Usuario")
-    password = st.text_input("Contraseña", type="password")
-    
-    if st.button("Iniciar Sesión"):
-        if username == "Usuario1" and password == "LCM2024":
-            st.session_state["logged_in"] = True
-            st.experimental_rerun()
-        else:
-            st.error("Usuario o contraseña incorrectos")
-    st.markdown('</div>', unsafe_allow_html=True)
-
-# Path to the logo
-logo_image_path = "static/img/logo.png"
-
 # Function to load logo and convert to base64
 def load_logo(logo_path):
     with open(logo_path, "rb") as image_file:
@@ -47,7 +29,7 @@ html_title_template = Template("""
         flex-direction: column;
     }
     .logo {
-        width: 150px;  /* Adjust the logo size here */
+        width: 150px;
     }
     .title-test {
         font-weight: bold;
@@ -65,13 +47,27 @@ html_title_template = Template("""
     </div>
 """)
 
+# Path to the logo
+logo_image_path = "static/img/logo.png"
+
+def login():
+    st.markdown(html_title_template.substitute(logo=load_logo(logo_image_path)), unsafe_allow_html=True)
+    
+    st.markdown('<div class="login-form">', unsafe_allow_html=True)
+    username = st.text_input("Usuario")
+    password = st.text_input("Contraseña", type="password")
+    
+    if st.button("Iniciar Sesión"):
+        if username == "Usuario1" and password == "LCM2024":
+            st.session_state["logged_in"] = True
+            st.experimental_rerun()
+        else:
+            st.error("Usuario o contraseña incorrectos")
+    st.markdown('</div>', unsafe_allow_html=True)
+
 
 # Functions for data visualization and analysis
-def client_view():
-    static_csv_path = "static/data/LCMG1_Granada2024.csv"
-
-    df = pd.read_csv(static_csv_path, header=0)
-    
+def client_view(df):
     questions = {
         "P09": "Genera o recibe algún tipo de ingreso (salarios, ventas, remesa, renta, jubilación, etc:)",
         "P46": "Calificación e índice al trabajo realizado por el alcalde(sa) del municipio",
@@ -84,12 +80,12 @@ def client_view():
         "LC": "Licencia Ciudadana Municipal",
     }
 
-    col1, col2 = st.columns([1, 1])  # Column width adjustment
+    col1, col2 = st.columns([1, 1])
 
     with col1:
         st.subheader("Seleccionar pregunta")
         selected_question_key = st.selectbox("Seleccionar pregunta", options=list(questions.keys()), format_func=lambda x: questions[x])
-        graph_type_key = selected_question_key + "_graph_type"  # Unique key for graph type radio button
+        graph_type_key = selected_question_key + "_graph_type"
         graph_type = st.radio("Seleccionar tipo de gráfico", options=["Gráfico de barras", "Gráfico de barras horizontales", "Gráfico de pastel"], key=graph_type_key)
         st.subheader(questions[selected_question_key])
        
@@ -103,8 +99,7 @@ def client_view():
             format_func=lambda option: option.split(":")[1].strip()
         )
 
-        if len(preguntas_seleccionadas) == 1:  # Only allow one selection
-            df = pd.read_csv(static_csv_path, header=0)
+        if len(preguntas_seleccionadas) == 1:
             tabla_cruzada = calcular_tabla_cruzada(df, preguntas_seleccionadas, selected_question_key)
             if tabla_cruzada is not None:
                 with st.expander("Ver tabla cruzada"):
@@ -117,12 +112,13 @@ def client_view():
 
     with col2:
         st.subheader("Gráfico")
-        colores = ["#00B050", "#FFC000", "#C00000", "#0070C0"]  # Lista de colores específicos
-        plot_question(df, selected_question_key, graph_type, questions, font_size=18, colors=colores)  # Llamada a plot_question() con la lista de colores
+        colores = ["#00B050", "#FFC000", "#C00000", "#0070C0"]
+        plot_question(df, selected_question_key, graph_type, questions, font_size=18, colors=colores)
 
         with st.expander(f" '{questions[selected_question_key]}'"):
             opciones_respuesta = calcular_opciones_respuesta(df, selected_question_key)
             st.write(opciones_respuesta)
+
 
 def caracterizacion():
     st.title("Municipio de Granada")
@@ -131,21 +127,17 @@ def caracterizacion():
     Fundada en 21 de abril de 1524, es conocida como “La gran sultana”, constituyéndose en uno de los asentamientos coloniales más antiguos de Centroamérica. Se distingue por la fusión de elementos arquitectónicos en la construcción de la ciudad.
     """)
     
-    # Dividir en dos columnas
     col1, col2 = st.columns(2)
     
-    # Menú desplegable para seleccionar el título
     selected_info = col1.radio("Seleccionar información:", ["Extensión territorial", "Limita", "Población estimada",
                                                          "Población urbana", "Población Rural", "Densidad poblacional",
                                                          "Organización Territorial", "Religión más practicada",
                                                          "Principal actividad económica", "Elecciones Municipales"])
     
-    # Mostrar la información correspondiente en la segunda columna
     if selected_info == "Extensión territorial":
         col2.write("""
         529.1km², representa el 56.95% del departamento.
         """)
-        # Agregar imagen en la segunda columna
 
     elif selected_info == "Limita":
         col2.write("""
@@ -158,7 +150,6 @@ def caracterizacion():
         col2.write("""
         132,054 que representa el 61.62%
         """)
-    # Continuar con el resto de los casos...
 
 
 # Functions for CSV handling
@@ -206,27 +197,19 @@ def calcular_tabla_cruzada(df, preguntas_seleccionadas, selected_question_key):
 
 
 def calcular_opciones_respuesta(df, pregunta):
-    # Definir las preguntas que deben ser procesadas por esta función
-    preguntas_procesadas = ["P46", "P47", "CGM1CPM", "CGM2ROP", "CGM3CRPM", "CGM4CC", "CGM5CGPM"]  # Reemplaza con las preguntas que deseas procesar
+    preguntas_procesadas = ["P46", "P47", "CGM1CPM", "CGM2ROP", "CGM3CRPM", "CGM4CC", "CGM5CGPM"]
 
-    # Verificar si la pregunta especificada debe ser procesada
     if pregunta in preguntas_procesadas:
-        # Crear una nueva columna para representar la categoría combinada
         df['categoria_combinada'] = df[pregunta].replace({
             '9 Bueno': 'Bueno/Muy bueno', '10 Muy bueno': 'Bueno/Muy bueno',
             '6 Pésimo': 'Pésimo/Malo', '7 Malo': 'Pésimo/Malo',
             '8 Regular': 'Regular', '5': 'NsNr/No conoce'
         })
 
-        
-
-        # Calcular opciones de respuesta normalizadas
         opciones_respuesta = df['categoria_combinada'].value_counts(normalize=True) * 100
 
-        # Crear un diccionario para almacenar las sumas de las categorías combinadas
         sumas_categorias = {'Muy bueno/bueno': 0, 'Regular': 0, 'Malo/Pésimo': 0, 'NsNr/No conoce': 0}
 
-        # Iterar sobre las opciones de respuesta y sumar las categorías combinadas
         for categoria, valor in opciones_respuesta.items():
             if 'Bueno' in categoria or 'Muy bueno' in categoria:
                 sumas_categorias['Muy bueno/bueno'] += valor
@@ -237,17 +220,15 @@ def calcular_opciones_respuesta(df, pregunta):
             elif 'NsNr' in categoria or 'No conoce' in categoria:
                 sumas_categorias['NsNr/No conoce'] += valor
 
-        # Redondear las sumas de las categorías combinadas
         sumas_categorias = {categoria: round(valor, 1) for categoria, valor in sumas_categorias.items()}
 
         return sumas_categorias
     else:
-        # Si la pregunta no debe ser procesada, devolver las opciones de respuesta normales
         opciones_respuesta = df[pregunta].value_counts(normalize=True) * 100
         return opciones_respuesta.round(1)
 
 def plot_question(df, question, graph_type, questions, font_size=18, colors=None):
-    opciones_respuesta = calcular_opciones_respuesta(df, question)  # Calcular opciones de respuesta
+    opciones_respuesta = calcular_opciones_respuesta(df, question)
 
     if question in ["P46", "P47", "CGM1CPM", "CGM2ROP", "CGM3CRPM", "CGM4CC", "CGM5CGPM"]:
         data = opciones_respuesta
@@ -258,34 +239,27 @@ def plot_question(df, question, graph_type, questions, font_size=18, colors=None
         labels = data.index
         values = data.values
     
-    # Calcular la media de todas las respuestas
     all_responses = df[df[question].apply(lambda x: str(x).isdigit())][question].astype(int)
     mean_response = all_responses.mean()
     
-    # Mostrar la media encima del gráfico
     st.write(f"Media de la pregunta: {mean_response:.2f}%")
 
-    # Verificar si 'No opina/no conoce' está en las etiquetas y si hay datos para esta categoría
     if "No opina/No conoce" in labels and len(df[df[question] == "No opina/No conoce"]) > 0:
      show_no_opina = True
      no_opina_index = labels.index("No opina/No conoce")
     else:
      show_no_opina = False
 
-    # Filtrar los valores de 'No opina/no conoce'
     if "No opina/No conoce" in labels and not show_no_opina:
         idx = labels.index("No opina/No conoce")
         del labels[idx]
         del values[idx]
 
-
-
     if question == "P09":
         if colors:
-            # Definir colores personalizados para sí y no
             custom_colors = ['#00B050' if label == 'Sí' else '#C00000' for label in labels]
             if show_no_opina:
-                custom_colors.append("#808080")  # Agregar un color para 'No opina/no conoce'
+                custom_colors.append("#808080")
             fig = px.bar(x=labels, y=values,
                          labels={'x': 'Respuesta', 'y': 'Porcentaje'},
                          color=labels,
@@ -293,19 +267,19 @@ def plot_question(df, question, graph_type, questions, font_size=18, colors=None
         else:
             fig = px.bar(x=labels, y=values,
                          labels={'x': 'Respuesta', 'y': 'Porcentaje'})
-    elif question == "LC":  # Condiciones de color específicas para la pregunta "Licencia Ciudadana Municipal"
+    elif question == "LC":
         custom_colors = []
         for label in labels:
             if label == "Aprobación":
-                custom_colors.append("#00B050")  # Aprobación en verde
+                custom_colors.append("#00B050")
             elif label == "Apropiación":
-                custom_colors.append("#92D050")  # Apropiación en un tono de verde más claro
+                custom_colors.append("#92D050")
             elif label == "Aceptación":
-                custom_colors.append("#FFC000")  # Aceptación en amarillo
+                custom_colors.append("#FFC000")
             elif label == "Rechazo":
-                custom_colors.append("#C00000")  # Rechazo en rojo
+                custom_colors.append("#C00000")
         if show_no_opina:
-            custom_colors.append("#808080")  # Agregar un color para 'No opina/no conoce'
+            custom_colors.append("#808080")
         if graph_type == "Gráfico de barras":
             fig = px.bar(x=labels, y=values,
                          labels={'x': 'Respuesta', 'y': 'Porcentaje'},
@@ -355,12 +329,27 @@ def plot_question(df, question, graph_type, questions, font_size=18, colors=None
 
     if fig:
         fig.update_traces(texttemplate='%{value:.1f}%', textfont_size=font_size)
-        fig.update_layout(font=dict(size=font_size))  # Ajustar el tamaño de fuente global
+        fig.update_layout(font=dict(size=font_size))
         st.plotly_chart(fig)
 
 
 # Main function to handle routing
 def main():
+    if "logged_in" not in st.session_state:
+        st.session_state["logged_in"] = False
+    
+    if st.session_state["logged_in"]:
+        st.sidebar.title("Navegación")
+        options = st.sidebar.radio("Ir a:", ["Vista Cliente", "Caracterización", "Admin Dashboard"])
+        
+        if options == "Vista Cliente":
+            df = pd.read_csv("static/data/LCMG1_Granada2024.csv")
+            client_view(df)
+        elif options == "Caracterización":
+            caracterizacion()
+        elif options == "Admin Dashboard":
+            admin_dashboard()
+    else:
         login()
 
 if __name__ == "__main__":
