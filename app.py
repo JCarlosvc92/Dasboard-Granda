@@ -206,16 +206,6 @@ def calcular_opciones_respuesta(df, pregunta):
             '8 Regular': 'Regular', '5': 'NsNr/No conoce'
         })
 
- def calcular_opciones_respuesta(df, pregunta):
-    preguntas_procesadas = ["P46", "P47", "CGM1CPM", "CGM2ROP", "CGM3CRPM", "CGM4CC", "CGM5CGPM"]
-
-    if pregunta in preguntas_procesadas:
-        df['categoria_combinada'] = df[pregunta].replace({
-            '9 Bueno': 'Bueno/Muy bueno', '10 Muy bueno': 'Bueno/Muy bueno',
-            '6 Pésimo': 'Pésimo/Malo', '7 Malo': 'Pésimo/Malo',
-            '8 Regular': 'Regular', '5': 'NsNr/No conoce'
-        })
-
         opciones_respuesta = df['categoria_combinada'].value_counts(normalize=True) * 100
 
         sumas_categorias = {'Muy bueno/bueno': 0, 'Regular': 0, 'Malo/Pésimo': 0, 'NsNr/No conoce': 0}
@@ -255,10 +245,10 @@ def plot_question(df, question, graph_type, questions, font_size=18, colors=None
     st.write(f"Media de la pregunta: {mean_response:.2f}%")
 
     if "No opina/No conoce" in labels and len(df[df[question] == "No opina/No conoce"]) > 0:
-     show_no_opina = True
-     no_opina_index = labels.index("No opina/No conoce")
+        show_no_opina = True
+        no_opina_index = labels.index("No opina/No conoce")
     else:
-     show_no_opina = False
+        show_no_opina = False
 
     if "No opina/No conoce" in labels and not show_no_opina:
         idx = labels.index("No opina/No conoce")
