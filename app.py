@@ -3,11 +3,32 @@ import pandas as pd
 from PIL import Image
 import plotly.express as px
 import base64
-from streamlit_option_menu import option_menu
 from string import Template
 import hydralit_components as hc
 import datetime
 import numpy as np
+
+# Configuración de la página
+st.set_page_config(layout='wide', initial_sidebar_state='collapsed')
+
+# Definir el menú de navegación
+menu_data = [
+    {'icon': "far fa-copy", 'label':"Vista Cliente"},
+    {'icon': "fa-solid fa-info-circle", 'label':"Caracterización"},
+    {'icon': "fas fa-tachometer-alt", 'label':"Admin Dashboard",'ttip':"Dashboard de administración"},
+    {'icon': "far fa-copy", 'label':"Cerrar Sesión"},
+]
+
+over_theme = {'txc_inactive': '#FFFFFF'}
+menu_id = hc.nav_bar(
+    menu_definition=menu_data,
+    override_theme=over_theme,
+    home_name='Home',
+    login_name='Cerrar Sesión',
+    hide_streamlit_markers=False, # Muestra la hamburguesa de Streamlit
+    sticky_nav=True, # Navegación fija en la parte superior
+    sticky_mode='pinned', # Pegado en la parte superior
+)
 
 
 # Function to load logo and convert to base64
@@ -339,17 +360,14 @@ def main():
         st.session_state["logged_in"] = False
     
     if st.session_state["logged_in"]:
-        st.sidebar.title("Navegación")
-        options = st.sidebar.radio("Ir a:", ["Vista Cliente", "Caracterización", "Admin Dashboard", "Cerrar Sesión"])
-        
-        if options == "Vista Cliente":
+        if menu_id == 'Vista Cliente':
             df = pd.read_csv("static/data/LCMG1_Granada2024.csv")
             client_view(df)
-        elif options == "Caracterización":
+        elif menu_id == 'Caracterización':
             caracterizacion()
-        elif options == "Admin Dashboard":
+        elif menu_id == 'Admin Dashboard':
             admin_dashboard()
-        elif options == "Cerrar Sesión":
+        elif menu_id == 'Cerrar Sesión':
             st.session_state["logged_in"] = False
             st.experimental_rerun()  # Reinicia la aplicación para volver a la pantalla de login
     else:
