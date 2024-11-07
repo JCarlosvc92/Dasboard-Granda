@@ -13,22 +13,23 @@ st.set_page_config(layout='wide', initial_sidebar_state='collapsed')
 
 # Definir el menú de navegación
 menu_data = [
-    {'icon': "far fa-copy", 'label':"Dashboard"},
+    {'icon': "far fa-copy", 'label':"Vista Cliente"},
+    {'icon': "fa-solid fa-info-circle", 'label':"Caracterización"},
+    {'icon': "fas fa-tachometer-alt", 'label':"Admin Dashboard",'ttip':"Dashboard de administración"},
+    {'icon': "far fa-copy", 'label':"Cerrar Sesión"},
 ]
-
-if 'logged_in' in st.session_state and st.session_state['logged_in']:
-    menu_data.append({'icon': "far fa-sign-out", 'label':"Cerrar Sesión"})
 
 over_theme = {'txc_inactive': '#FFFFFF'}
 menu_id = hc.nav_bar(
     menu_definition=menu_data,
     override_theme=over_theme,
-    home_name='Dashboard',
+    home_name='Home',
     login_name='Cerrar Sesión',
-    hide_streamlit_markers=False,  # Muestra la hamburguesa de Streamlit
-    sticky_nav=True,  # Navegación fija en la parte superior
-    sticky_mode='pinned',  # Pegado en la parte superior
+    hide_streamlit_markers=False, # Muestra la hamburguesa de Streamlit
+    sticky_nav=True, # Navegación fija en la parte superior
+    sticky_mode='pinned', # Pegado en la parte superior
 )
+
 
 # Function to load logo and convert to base64
 def load_logo(logo_path):
@@ -85,12 +86,9 @@ def login():
             st.error("Usuario o contraseña incorrectos")
     st.markdown('</div>', unsafe_allow_html=True)
 
-def logout():
-    st.session_state["logged_in"] = False
-    st.experimental_rerun()
 
 # Functions for data visualization and analysis
-def Dashboard(df):
+def client_view(df):
     questions = {
         "P09": "Genera o recibe algún tipo de ingreso (salarios, ventas, remesa, renta, jubilación, etc:)",
         "P46": "Calificación e índice al trabajo realizado por el alcalde(sa) del municipio",
@@ -142,9 +140,64 @@ def Dashboard(df):
             opciones_respuesta = calcular_opciones_respuesta(df, selected_question_key)
             st.write(opciones_respuesta)
 
-def logout_action():
-    if 'logged_in' in st.session_state and st.session_state['logged_in']:
-        logout()
+
+def caracterizacion():
+    st.title("Municipio de Granada")
+    st.write("""
+    **Municipio de Granada**
+    Fundada en 21 de abril de 1524, es conocida como “La gran sultana”, constituyéndose en uno de los asentamientos coloniales más antiguos de Centroamérica. Se distingue por la fusión de elementos arquitectónicos en la construcción de la ciudad.
+    """)
+    
+    col1, col2 = st.columns(2)
+    
+    selected_info = col1.radio("Seleccionar información:", ["Extensión territorial", "Limita", "Población estimada",
+                                                         "Población urbana", "Población Rural", "Densidad poblacional",
+                                                         "Organización Territorial", "Religión más practicada",
+                                                         "Principal actividad económica", "Elecciones Municipales"])
+    
+    if selected_info == "Extensión territorial":
+        col2.write("""
+        529.1km², representa el 56.95% del departamento.
+        """)
+
+    elif selected_info == "Limita":
+        col2.write("""
+        Al Norte con Tipitapa. 
+        Al Sur con Nandaime. 
+        Al Este con San Lorenzo y el lago Cocibolca. 
+        Al Oeste con Tisma, Masaya, Diría, Diriomo, Nandaime y laguna de apoyo.
+        """)
+    elif selected_info == "Población estimada":
+        col2.write("""
+        132,054 que representa el 61.62%
+        """)
+
+
+# Functions for CSV handling
+def cargar_csv():
+    st.subheader("Cargar CSV")
+    uploaded_file = st.file_uploader("Elige un archivo CSV", type="csv")
+    if uploaded_file:
+        df = pd.read_csv(uploaded_file)
+        st.write(df)
+        st.success("Archivo CSV cargado exitosamente")
+        return df
+    return None
+
+def descargar_csv(dataframe):
+    if dataframe is not None:
+        csv = dataframe.to_csv(index=False)
+        b64 = base64.b64encode(csv.encode()).decode()
+        href = f'<a href="data:file/csv;base64,{b64}" download="datos.csv">Descargar CSV</a>'
+        st.markdown(href, unsafe_allow_html=True)
+
+def admin_dashboard():
+    st.title("Dashboard de Administrador")
+    df = cargar_csv()
+    if df is not None:
+        st.subheader("Guardar CSV")
+        if st.button("Descargar datos"):
+            descargar_csv(df)
 
 # Functions for data analysis
 def calcular_tabla_cruzada(df, preguntas_seleccionadas, selected_question_key):
@@ -191,41 +244,136 @@ def calcular_opciones_respuesta(df, pregunta):
         sumas_categorias = {categoria: round(valor, 1) for categoria, valor in sumas_categorias.items()}
 
         return sumas_categorias
+    else:
+        opciones_respuesta = df[pregunta].value_counts(normalize=True) * 100
+        return opciones_respuesta.round(1)
+
+def plot_question(df, question, graph_type, questions, font_size=18, colors=None):
+    opciones_respuesta = calcular_opciones_respuesta(df, question)
+
+    if question in ["P46", "P47", "CGM1CPM", "CGM2ROP", "CGM3CRPM", "CGM4CC", "CGM5CGPM"]:
+        data = opciones_respuesta
+        labels = list(opciones_respuesta.keys())
+        values = list(opciones_respuesta.values())
+    else:
+        data = df[question].value_counts(normalize=True) * 100
+        labels = data.index
+        values = data.values
+    
+    all_responses = df[df[question].apply(lambda x: str(x).isdigit())][question].astype(int)
+    mean_response = all_responses.mean()
+    
+    st.write(f"Media de la pregunta: {mean_response:.2f}%")
+
+    if "No opina/No conoce" in labels and len(df[df[question] == "No opina/No conoce"]) > 0:
+        show_no_opina = True
+        no_opina_index = labels.index("No opina/No conoce")
+    else:
+        show_no_opina = False
+
+    if "No opina/No conoce" in labels and not show_no_opina:
+        idx = labels.index("No opina/No conoce")
+        del labels[idx]
+        del values[idx]
+
+    if question == "P09":
+        if colors:
+            custom_colors = ['#00B050' if label == 'Sí' else '#C00000' for label in labels]
+            if show_no_opina:
+                custom_colors.append("#808080")
+            fig = px.bar(x=labels, y=values,
+                         labels={'x': 'Respuesta', 'y': 'Porcentaje'},
+                         color=labels,
+                         color_discrete_map={val: col for val, col in zip(labels, custom_colors)})
+        else:
+            fig = px.bar(x=labels, y=values,
+                         labels={'x': 'Respuesta', 'y': 'Porcentaje'})
+    elif question == "LC":
+        custom_colors = []
+        for label in labels:
+            if label == "Aprobación":
+                custom_colors.append("#00B050")
+            elif label == "Apropiación":
+                custom_colors.append("#92D050")
+            elif label == "Aceptación":
+                custom_colors.append("#FFC000")
+            elif label == "Rechazo":
+                custom_colors.append("#C00000")
+        if show_no_opina:
+            custom_colors.append("#808080")
+        if graph_type == "Gráfico de barras":
+            fig = px.bar(x=labels, y=values,
+                         labels={'x': 'Respuesta', 'y': 'Porcentaje'},
+                         color=labels,
+                         color_discrete_map={val: col for val, col in zip(labels, custom_colors)})
+        elif graph_type == "Gráfico de barras horizontales":
+            fig = px.bar(x=values, y=labels, orientation='h',
+                         labels={'y': 'Respuesta', 'x': 'Porcentaje'},
+                         color=labels,
+                         color_discrete_map={val: col for val, col in zip(labels, custom_colors)})
+        elif graph_type == "Gráfico de pastel":
+            fig = px.pie(names=labels,
+                         values=values,
+                         title=f"Frecuencia de respuestas para {questions[question]}",
+                         color=labels,
+                         color_discrete_map={val: col for val, col in zip(labels, custom_colors)})
+    else:
+        if graph_type == "Gráfico de barras":
+            if colors:
+                fig = px.bar(x=labels, y=values,
+                             labels={'x': 'Respuesta', 'y': 'Porcentaje'},
+                             color=labels,
+                             color_discrete_map={val: col for val, col in zip(labels, colors)})
+            else:
+                fig = px.bar(x=labels, y=values,
+                             labels={'x': 'Respuesta', 'y': 'Porcentaje'})
+        elif graph_type == "Gráfico de barras horizontales":
+            if colors:
+                fig = px.bar(x=values, y=labels, orientation='h',
+                             labels={'y': 'Respuesta', 'x': 'Porcentaje'},
+                             color=labels,
+                             color_discrete_map={val: col for val, col in zip(labels, colors)})
+            else:
+                fig = px.bar(x=values, y=labels, orientation='h',
+                             labels={'y': 'Respuesta', 'x': 'Porcentaje'})
+        elif graph_type == "Gráfico de pastel":
+            if colors:
+                fig = px.pie(names=labels,
+                             values=values,
+                             title=f"Frecuencia de respuestas para {questions[question]}",
+                             color=labels,
+                             color_discrete_map={val: col for val, col in zip(labels, colors)})
+            else:
+                fig = px.pie(names=labels,
+                             values=values,
+                             title=f"Frecuencia de respuestas para {questions[question]}")
+
+    if fig:
+        fig.update_traces(texttemplate='%{value:.1f}%', textfont_size=font_size)
+        fig.update_layout(font=dict(size=font_size))
+        st.plotly_chart(fig)
 
 
-def plot_question(df, selected_question_key, graph_type, questions, font_size=18, colors=None):
-    pregunta = questions[selected_question_key]
-    opciones_respuesta = df[selected_question_key].value_counts(normalize=True) * 100
+# Main function to handle routing
+def main():
+    if "logged_in" not in st.session_state:
+        st.session_state["logged_in"] = False
+    
+    if st.session_state["logged_in"]:
+        if menu_id == 'Vista Cliente':
+            df = pd.read_csv("static/data/LCMG1_Granada2024.csv")
+            client_view(df)
+        elif menu_id == 'Caracterización':
+            caracterizacion()
+        elif menu_id == 'Admin Dashboard':
+            admin_dashboard()
+        elif menu_id == 'Cerrar Sesión':
+            st.session_state["logged_in"] = False
+            st.experimental_rerun()  # Reinicia la aplicación para volver a la pantalla de login
+    else:
+        login()
 
-    if graph_type == "Gráfico de barras":
-        fig = px.bar(x=opciones_respuesta.index, y=opciones_respuesta.values, color=opciones_respuesta.index,
-                     color_discrete_sequence=colors, labels={selected_question_key: pregunta},
-                     title=f"{pregunta} - Gráfico de barras", width=600, height=400)
-        fig.update_layout(font_size=font_size)
-        st.plotly_chart(fig, use_container_width=True)
+if __name__ == "__main__":
+    main()
 
-    elif graph_type == "Gráfico de barras horizontales":
-        fig = px.bar(x=opciones_respuesta.values, y=opciones_respuesta.index, color=opciones_respuesta.index,
-                     color_discrete_sequence=colors, labels={selected_question_key: pregunta},
-                     title=f"{pregunta} - Gráfico de barras horizontales", width=600, height=400)
-        fig.update_layout(font_size=font_size)
-        st.plotly_chart(fig, use_container_width=True)
 
-    elif graph_type == "Gráfico de pastel":
-        fig = px.pie(names=opciones_respuesta.index, values=opciones_respuesta.values, title=f"{pregunta} - Gráfico de pastel",
-                     labels={selected_question_key: pregunta}, width=600, height=400)
-        fig.update_layout(font_size=font_size)
-        st.plotly_chart(fig, use_container_width=True)
-
-# Control de sesión
-if 'logged_in' not in st.session_state:
-    st.session_state['logged_in'] = False
-
-if not st.session_state['logged_in']:
-    login()
-else:
-    # Aquí se debe cargar el CSV o los datos a analizar
-    df = pd.read_csv("data.csv")  # Ejemplo de cómo cargar un archivo CSV
-    Dashboard(df)
-
-    logout_action()  # Botón para cerrar sesión
