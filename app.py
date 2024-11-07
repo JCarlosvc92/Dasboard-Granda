@@ -13,9 +13,7 @@ st.set_page_config(layout='wide', initial_sidebar_state='collapsed')
 
 # Definir el menú de navegación
 menu_data = [
-    {'icon': "far fa-copy", 'label':"Vista Cliente"},
-    {'icon': "fa-solid fa-info-circle", 'label':"Caracterización"},
-    {'icon': "fas fa-tachometer-alt", 'label':"Admin Dashboard",'ttip':"Dashboard de administración"},
+    {'icon': "far fa-copy", 'label':"Dashboard"},
     {'icon': "far fa-copy", 'label':"Cerrar Sesión"},
 ]
 
@@ -141,63 +139,6 @@ def client_view(df):
             st.write(opciones_respuesta)
 
 
-def caracterizacion():
-    st.title("Municipio de Granada")
-    st.write("""
-    **Municipio de Granada**
-    Fundada en 21 de abril de 1524, es conocida como “La gran sultana”, constituyéndose en uno de los asentamientos coloniales más antiguos de Centroamérica. Se distingue por la fusión de elementos arquitectónicos en la construcción de la ciudad.
-    """)
-    
-    col1, col2 = st.columns(2)
-    
-    selected_info = col1.radio("Seleccionar información:", ["Extensión territorial", "Limita", "Población estimada",
-                                                         "Población urbana", "Población Rural", "Densidad poblacional",
-                                                         "Organización Territorial", "Religión más practicada",
-                                                         "Principal actividad económica", "Elecciones Municipales"])
-    
-    if selected_info == "Extensión territorial":
-        col2.write("""
-        529.1km², representa el 56.95% del departamento.
-        """)
-
-    elif selected_info == "Limita":
-        col2.write("""
-        Al Norte con Tipitapa. 
-        Al Sur con Nandaime. 
-        Al Este con San Lorenzo y el lago Cocibolca. 
-        Al Oeste con Tisma, Masaya, Diría, Diriomo, Nandaime y laguna de apoyo.
-        """)
-    elif selected_info == "Población estimada":
-        col2.write("""
-        132,054 que representa el 61.62%
-        """)
-
-
-# Functions for CSV handling
-def cargar_csv():
-    st.subheader("Cargar CSV")
-    uploaded_file = st.file_uploader("Elige un archivo CSV", type="csv")
-    if uploaded_file:
-        df = pd.read_csv(uploaded_file)
-        st.write(df)
-        st.success("Archivo CSV cargado exitosamente")
-        return df
-    return None
-
-def descargar_csv(dataframe):
-    if dataframe is not None:
-        csv = dataframe.to_csv(index=False)
-        b64 = base64.b64encode(csv.encode()).decode()
-        href = f'<a href="data:file/csv;base64,{b64}" download="datos.csv">Descargar CSV</a>'
-        st.markdown(href, unsafe_allow_html=True)
-
-def admin_dashboard():
-    st.title("Dashboard de Administrador")
-    df = cargar_csv()
-    if df is not None:
-        st.subheader("Guardar CSV")
-        if st.button("Descargar datos"):
-            descargar_csv(df)
 
 # Functions for data analysis
 def calcular_tabla_cruzada(df, preguntas_seleccionadas, selected_question_key):
@@ -362,11 +303,8 @@ def main():
     if st.session_state["logged_in"]:
         if menu_id == 'Vista Cliente':
             df = pd.read_csv("static/data/LCMG1_Granada2024.csv")
-            client_view(df)
-        elif menu_id == 'Caracterización':
-            caracterizacion()
-        elif menu_id == 'Admin Dashboard':
-            admin_dashboard()
+            Dashboard(df)
+
         elif menu_id == 'Cerrar Sesión':
             st.session_state["logged_in"] = False
             st.experimental_rerun()  # Reinicia la aplicación para volver a la pantalla de login
