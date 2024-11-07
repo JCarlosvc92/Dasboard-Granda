@@ -21,7 +21,7 @@ over_theme = {'txc_inactive': '#FFFFFF'}
 menu_id = hc.nav_bar(
     menu_definition=menu_data,
     override_theme=over_theme,
-    home_name='Home',
+    home_name='Dashboard',
     login_name='Cerrar Sesión',
     hide_streamlit_markers=False, # Muestra la hamburguesa de Streamlit
     sticky_nav=True, # Navegación fija en la parte superior
@@ -86,7 +86,7 @@ def login():
 
 
 # Functions for data visualization and analysis
-def client_view(df):
+def Dashboard(df):
     questions = {
         "P09": "Genera o recibe algún tipo de ingreso (salarios, ventas, remesa, renta, jubilación, etc:)",
         "P46": "Calificación e índice al trabajo realizado por el alcalde(sa) del municipio",
@@ -301,7 +301,7 @@ def main():
         st.session_state["logged_in"] = False
     
     if st.session_state["logged_in"]:
-        if menu_id == 'Vista Cliente':
+        if menu_id == 'Dashboard':
             df = pd.read_csv("static/data/LCMG1_Granada2024.csv")
             Dashboard(df)
 
