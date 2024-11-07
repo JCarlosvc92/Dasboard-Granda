@@ -10,7 +10,11 @@ import numpy as np
 
 # Configuración de la página
 st.set_page_config(layout='wide', initial_sidebar_state='collapsed')
-
+# Definir el menú de navegación
+menu_data = [
+    {'icon': "far fa-copy", 'label':"Dashboard"},
+    {'icon': "far fa-copy", 'label':"Cerrar Sesión"},
+]
 
 
 over_theme = {'txc_inactive': '#FFFFFF'}
