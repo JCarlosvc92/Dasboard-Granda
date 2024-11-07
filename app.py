@@ -295,7 +295,21 @@ def plot_question(df, question, graph_type, questions, font_size=18, colors=None
         st.plotly_chart(fig)
 
 
+# Main function to handle routing
+def main():
+    if "logged_in" not in st.session_state:
+        st.session_state["logged_in"] = False
+    
+    if st.session_state["logged_in"]:
+        if menu_id == 'Dashboard':
+            df = pd.read_csv("static/data/LCMG1_Granada2024.csv")
+            Dashboard(df)
 
+        elif menu_id == 'Cerrar Sesión':
+            st.session_state["logged_in"] = False
+            st.experimental_rerun()  # Reinicia la aplicación para volver a la pantalla de login
+    else:
+        login()
 
 if __name__ == "__main__":
     main()
