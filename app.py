@@ -252,53 +252,106 @@ def plot_question(df, question, graph_type, questions, font_size=18, colors=None
     opciones_respuesta = calcular_opciones_respuesta(df, question)
 
     if question in ["P46", "P47", "CGM1CPM", "CGM2ROP", "CGM3CRPM", "CGM4CC", "CGM5CGPM"]:
+        data = opciones_respuesta
         labels = list(opciones_respuesta.keys())
         values = list(opciones_respuesta.values())
     else:
         data = df[question].value_counts(normalize=True) * 100
-        labels = data.index.tolist()
-        values = data.values.tolist()
+        labels = data.index
+        values = data.values
+    
+    all_responses = df[df[question].apply(lambda x: str(x).isdigit())][question].astype(int)
+    mean_response = all_responses.mean()
+    
+    st.write(f"Media de la pregunta: {mean_response:.2f}%")
 
-    # Calculando la media de las respuestas (numéricas si aplica)
-    try:
-        all_responses = df[df[question].apply(lambda x: str(x).isdigit())][question].astype(int)
-        mean_response = all_responses.mean()
-        st.write(f"Media de la pregunta: {mean_response:.2f}%")
-    except ValueError:
-        st.warning("No hay suficientes datos numéricos para calcular la media.")
-
-    # Configurar el gráfico según el tipo seleccionado
-    if graph_type == "Gráfico de barras":
-        fig = px.bar(
-            x=labels, 
-            y=values, 
-            labels={'x': 'Categoría', 'y': 'Porcentaje (%)'},
-            title=f"Distribución de respuestas para '{questions[question]}'",
-            text=values,
-            color_discrete_sequence=colors if colors else px.colors.qualitative.Plotly
-        )
-    elif graph_type == "Gráfico de barras horizontales":
-        fig = px.bar(
-            x=values, 
-            y=labels, 
-            orientation='h',
-            labels={'x': 'Porcentaje (%)', 'y': 'Categoría'},
-            title=f"Distribución de respuestas para '{questions[question]}'",
-            text=values,
-            color_discrete_sequence=colors if colors else px.colors.qualitative.Plotly
-        )
-    elif graph_type == "Gráfico de pastel":
-        fig = px.pie(
-            names=labels,
-            values=values,
-            title=f"Distribución de respuestas para '{questions[question]}'",
-            color_discrete_sequence=colors if colors else px.colors.qualitative.Plotly
-        )
+    if "No opina/No conoce" in labels and len(df[df[question] == "No opina/No conoce"]) > 0:
+        show_no_opina = True
+        no_opina_index = labels.index("No opina/No conoce")
     else:
-        st.error("Tipo de gráfico no válido seleccionado.")
+        show_no_opina = False
 
-    fig.update_layout(font=dict(size=font_size))
-    st.plotly_chart(fig, use_container_width=True)
+    if "No opina/No conoce" in labels and not show_no_opina:
+        idx = labels.index("No opina/No conoce")
+        del labels[idx]
+        del values[idx]
+
+    if question == "P09":
+        if colors:
+            custom_colors = ['#00B050' if label == 'Sí' else '#C00000' for label in labels]
+            if show_no_opina:
+                custom_colors.append("#808080")
+            fig = px.bar(x=labels, y=values,
+                         labels={'x': 'Respuesta', 'y': 'Porcentaje'},
+                         color=labels,
+                         color_discrete_map={val: col for val, col in zip(labels, custom_colors)})
+        else:
+            fig = px.bar(x=labels, y=values,
+                         labels={'x': 'Respuesta', 'y': 'Porcentaje'})
+    elif question == "LC":
+        custom_colors = []
+        for label in labels:
+            if label == "Aprobación":
+                custom_colors.append("#00B050")
+            elif label == "Apropiación":
+                custom_colors.append("#92D050")
+            elif label == "Aceptación":
+                custom_colors.append("#FFC000")
+            elif label == "Rechazo":
+                custom_colors.append("#C00000")
+        if show_no_opina:
+            custom_colors.append("#808080")
+        if graph_type == "Gráfico de barras":
+            fig = px.bar(x=labels, y=values,
+                         labels={'x': 'Respuesta', 'y': 'Porcentaje'},
+                         color=labels,
+                         color_discrete_map={val: col for val, col in zip(labels, custom_colors)})
+        elif graph_type == "Gráfico de barras horizontales":
+            fig = px.bar(x=values, y=labels, orientation='h',
+                         labels={'y': 'Respuesta', 'x': 'Porcentaje'},
+                         color=labels,
+                         color_discrete_map={val: col for val, col in zip(labels, custom_colors)})
+        elif graph_type == "Gráfico de pastel":
+            fig = px.pie(names=labels,
+                         values=values,
+                         title=f"Frecuencia de respuestas para {questions[question]}",
+                         color=labels,
+                         color_discrete_map={val: col for val, col in zip(labels, custom_colors)})
+    else:
+        if graph_type == "Gráfico de barras":
+            if colors:
+                fig = px.bar(x=labels, y=values,
+                             labels={'x': 'Respuesta', 'y': 'Porcentaje'},
+                             color=labels,
+                             color_discrete_map={val: col for val, col in zip(labels, colors)})
+            else:
+                fig = px.bar(x=labels, y=values,
+                             labels={'x': 'Respuesta', 'y': 'Porcentaje'})
+        elif graph_type == "Gráfico de barras horizontales":
+            if colors:
+                fig = px.bar(x=values, y=labels, orientation='h',
+                             labels={'y': 'Respuesta', 'x': 'Porcentaje'},
+                             color=labels,
+                             color_discrete_map={val: col for val, col in zip(labels, colors)})
+            else:
+                fig = px.bar(x=values, y=labels, orientation='h',
+                             labels={'y': 'Respuesta', 'x': 'Porcentaje'})
+        elif graph_type == "Gráfico de pastel":
+            if colors:
+                fig = px.pie(names=labels,
+                             values=values,
+                             title=f"Frecuencia de respuestas para {questions[question]}",
+                             color=labels,
+                             color_discrete_map={val: col for val, col in zip(labels, colors)})
+            else:
+                fig = px.pie(names=labels,
+                             values=values,
+                             title=f"Frecuencia de respuestas para {questions[question]}")
+
+    if fig:
+        fig.update_traces(texttemplate='%{value:.1f}%', textfont_size=font_size)
+        fig.update_layout(font=dict(size=font_size))
+        st.plotly_chart(fig)
 
 
 # Main function to handle routing
