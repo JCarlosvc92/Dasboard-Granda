@@ -1,22 +1,19 @@
 import streamlit as st
 import pandas as pd
-from PIL import Image
 import plotly.express as px
 import base64
 from string import Template
 import hydralit_components as hc
-import datetime
-import numpy as np
 
 # Configuración de la página
 st.set_page_config(layout='wide', initial_sidebar_state='collapsed')
 
 # Definir el menú de navegación
 menu_data = [
-    {'icon': "far fa-copy", 'label':"Vista Cliente"},
-    {'icon': "fa-solid fa-info-circle", 'label':"Caracterización"},
-    {'icon': "fas fa-tachometer-alt", 'label':"Admin Dashboard",'ttip':"Dashboard de administración"},
-    {'icon': "far fa-copy", 'label':"Cerrar Sesión"},
+    {'icon': "far fa-copy", 'label': "Vista Cliente"},
+    {'icon': "fa-solid fa-info-circle", 'label': "Caracterización"},
+    {'icon': "fas fa-tachometer-alt", 'label': "Admin Dashboard", 'ttip': "Dashboard de administración"},
+    {'icon': "far fa-copy", 'label': "Cerrar Sesión"},
 ]
 
 over_theme = {'txc_inactive': '#FFFFFF'}
@@ -25,11 +22,10 @@ menu_id = hc.nav_bar(
     override_theme=over_theme,
     home_name='Home',
     login_name='Cerrar Sesión',
-    hide_streamlit_markers=False, # Muestra la hamburguesa de Streamlit
-    sticky_nav=True, # Navegación fija en la parte superior
-    sticky_mode='pinned', # Pegado en la parte superior
+    hide_streamlit_markers=False,
+    sticky_nav=True,
+    sticky_mode='pinned',
 )
-
 
 # Function to load logo and convert to base64
 def load_logo(logo_path):
@@ -86,7 +82,6 @@ def login():
             st.error("Usuario o contraseña incorrectos")
     st.markdown('</div>', unsafe_allow_html=True)
 
-
 # Functions for data visualization and analysis
 def client_view(df):
     questions = {
@@ -140,7 +135,6 @@ def client_view(df):
             opciones_respuesta = calcular_opciones_respuesta(df, selected_question_key)
             st.write(opciones_respuesta)
 
-
 def caracterizacion():
     st.title("Municipio de Granada")
     st.write("""
@@ -171,7 +165,6 @@ def caracterizacion():
         col2.write("""
         132,054 que representa el 61.62%
         """)
-
 
 # Functions for CSV handling
 def cargar_csv():
@@ -215,7 +208,6 @@ def calcular_tabla_cruzada(df, preguntas_seleccionadas, selected_question_key):
         st.error(f"Error: {e}. Alguna de las preguntas seleccionadas no existe en el DataFrame.")
         st.write(f"Preguntas disponibles en el DataFrame: {list(df.columns)}")
         return None
-
 
 def calcular_opciones_respuesta(df, pregunta):
     preguntas_procesadas = ["P46", "P47", "CGM1CPM", "CGM2ROP", "CGM3CRPM", "CGM4CC", "CGM5CGPM"]
@@ -353,7 +345,6 @@ def plot_question(df, question, graph_type, questions, font_size=18, colors=None
         fig.update_layout(font=dict(size=font_size))
         st.plotly_chart(fig)
 
-
 # Main function to handle routing
 def main():
     if "logged_in" not in st.session_state:
@@ -375,5 +366,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
